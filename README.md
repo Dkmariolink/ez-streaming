@@ -1,4 +1,4 @@
-# EZ Streamer
+# EZ Streaming
 
 A free utility for streamers to launch multiple applications with a single click.
 
