@@ -65,4 +65,4 @@ Created by [Dkmariolink](https://x.com/TheDkmariolink) - Free Software
 
 ## Questions / Comments?
 
-Email me @ TheDkmariolink@Gmail.com
+Email me @ TheDkmariolink@gmail.com
