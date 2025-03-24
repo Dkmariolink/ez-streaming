@@ -27,16 +27,30 @@ class StreamerApp:
         self.root.title("EZ Streaming")
         self.root.geometry("620x500")
         self.root.minsize(500, 400)
-        
+
+        # Set window icon
+        icon_path = None
+        if getattr(sys, 'frozen', False):
+        # Running as compiled executable
+            app_dir = os.path.dirname(sys.executable)
+            icon_path = os.path.join(app_dir, "assets", "icon.ico")
+        else:
+            # Running as script
+            current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            icon_path = os.path.join(current_dir, "assets", "icon.ico")
+    
+        if icon_path and os.path.exists(icon_path):
+            self.root.iconbitmap(icon_path)
+
         # Set app styling
         self.setup_styling()
-        
+
         # Build the UI
         self.create_widgets()
-        
+
         # Load saved configuration
         self.load_config()
-        
+
         # Start main event loop
         self.root.mainloop()
 
@@ -244,14 +258,17 @@ class StreamerApp:
             self.save_config()
 
     def launch_program(self, path):
-        """Launch a single program"""
-        if not path:
+         """Launch a single program"""
+         if not path:
             messagebox.showerror("Error", "Please select a program file.")
             return
             
-        try:
-            subprocess.Popen([path])
-        except Exception as e:
+         try:
+            # Extract the directory from the path
+            program_dir = os.path.dirname(path)
+            # Launch the program with its directory as working directory
+            subprocess.Popen([path], cwd=program_dir)
+         except Exception as e:
             messagebox.showerror("Launch Error", str(e))
 
     def launch_all(self):
@@ -268,9 +285,9 @@ class StreamerApp:
             
             if path:
                 try:
-                    subprocess.Popen([path])
+                    program_dir = os.path.dirname(path)
+                    subprocess.Popen([path], cwd=program_dir)
                     launched += 1
-                    
                     # Update UI to give feedback
                     self.root.update()
                     # Small delay to prevent system overload
