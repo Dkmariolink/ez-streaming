@@ -14,42 +14,30 @@ class ConfigManager:
     def __init__(self):
         """Initialize the configuration manager"""
         self.config_dir = self._get_config_dir()
-        self.config_path = os.path.join(self.config_dir, "ez_streamer_config.json")
+        self.config_path = os.path.join(self.config_dir, "ez_streaming_config.json")
         
         # Ensure config directory exists
         os.makedirs(self.config_dir, exist_ok=True)
     
     def _get_config_dir(self):
         """Get the appropriate configuration directory for the platform"""
-        if getattr(sys, 'frozen', False):
-            # Running as compiled executable
-            app_dir = os.path.dirname(sys.executable)
-            return os.path.join(app_dir, "config")
+        if sys.platform == "win32":
+            # Windows - always use AppData
+            return os.path.join(os.environ.get("APPDATA", os.path.expanduser("~")), "EZStreaming")
+        elif sys.platform == "darwin":
+            # macOS
+            return os.path.join(os.path.expanduser("~"), "Library", "Application Support", "EZStreaming")
         else:
-            # Running as script, use user config directory for platform
-            if sys.platform == "win32":
-                # Windows
-                return os.path.join(os.environ.get("APPDATA", os.path.expanduser("~")), "EZStreamer")
-            elif sys.platform == "darwin":
-                # macOS
-                return os.path.join(os.path.expanduser("~"), "Library", "Application Support", "EZStreamer")
-            else:
-                # Linux/Unix
-                return os.path.join(os.path.expanduser("~"), ".config", "ezstreamer")
+            # Linux/Unix
+            return os.path.join(os.path.expanduser("~"), ".config", "ezstreaming")
     
     def save_config(self, config_data):
-        """
-        Save configuration data to file
-        
-        Args:
-            config_data (dict): Configuration data to save
-        
-        Returns:
-            bool: True if successful, False otherwise
-        """
+        """Save configuration data to file"""
         try:
+            print(f"Saving configuration to: {self.config_path}")
             with open(self.config_path, "w", encoding="utf-8") as f:
                 json.dump(config_data, f, indent=2)
+            print(f"Configuration saved successfully")
             return True
         except Exception as e:
             print(f"Error saving configuration: {str(e)}")
