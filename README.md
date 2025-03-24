@@ -57,7 +57,21 @@ Contributions are welcome! Feel free to submit issues and pull requests.
 
 ## License
 
-This project is licensed under the Apache 2.0 License - see the LICENSE file for details. Attribution required.
+EZ Streaming is licensed under the Apache License 2.0.
+
+This means you can:
+- Use the software commercially
+- Modify the software
+- Distribute the software
+- Use patent claims
+- Place warranty
+
+Under these conditions:
+- Include the original license
+- State changes you made
+- Include copyright notice (attribution required)
+
+The full license is available in the LICENSE file.
 
 ## Credits
 
