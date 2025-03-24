@@ -45,7 +45,7 @@ A free utility for streamers to launch multiple applications with a single click
 
 ```
 pip install pyinstaller
-pyinstaller --onefile --windowed --icon=assets/icon.ico --name EZStreamer src/main.py
+pyinstaller --onefile --windowed --icon=assets/icon.ico --name EZStreaming src/main.py
 ```
 
 ## Contributing
