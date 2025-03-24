@@ -24,8 +24,8 @@ A free utility for streamers to launch multiple applications with a single click
 1. Ensure you have Python 3.8 or newer installed
 2. Clone this repository
    ```
-   git clone https://github.com/yourusername/ez-streamer.git
-   cd ez-streamer
+   git clone https://github.com/yourusername/ez-streaming.git
+   cd ez-streaming
    ```
 3. Run the application
    ```
@@ -54,8 +54,8 @@ Contributions are welcome! Feel free to submit issues and pull requests.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the Apache 2.0 License - see the LICENSE file for details.
 
 ## Credits
 
-Created by [Dkmariolink] - Free Software
+Created by [Dkmariolink](https://x.com/TheDkmariolink) - Free Software
