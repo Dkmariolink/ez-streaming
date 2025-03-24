@@ -1,6 +1,6 @@
 # EZ Streaming
 
-**A free utility for streamers to launch multiple applications with a single click.**
+**A free Windows utility for streamers to launch multiple applications with a single click.**
 
 ![screenshot](https://github.com/user-attachments/assets/87803798-a951-4ce9-ae29-2f9c13f885ec)
 
