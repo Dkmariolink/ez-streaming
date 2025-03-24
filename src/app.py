@@ -397,11 +397,11 @@ class StreamerApp:
         else:
             # Initialize with default streaming apps
             default_apps = [
-                {"name": "OBS Studio", "path": ""},
-                {"name": "VTube Studio", "path": ""},
-                {"name": "MixItUp", "path": ""},
-                {"name": "Streamer.Bot", "path": ""},
-                {"name": "Twitch Integrated Throwing System", "path": ""}
+                {"name": "", "path": ""},
+                {"name": "", "path": ""},
+                {"name": "", "path": ""},
+                {"name": "", "path": ""},
+                {"name": "", "path": ""}
             ]
             self.profiles = {"Default": default_apps}
             
