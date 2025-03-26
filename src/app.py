@@ -26,6 +26,42 @@ import subprocess
 import sys
 from config_manager import ConfigManager
 
+class ToolTip:
+    """Create a tooltip for a given widget"""
+    def __init__(self, widget, text=''):
+        self.widget = widget
+        self.text = text
+        self.tooltip_window = None
+        self.widget.bind("<Enter>", self.show_tooltip)
+        self.widget.bind("<Leave>", self.hide_tooltip)
+    
+    def show_tooltip(self, event=None):
+        """Display the tooltip"""
+        x, y, _, _ = self.widget.bbox("insert")
+        x += self.widget.winfo_rootx() + 25
+        y += self.widget.winfo_rooty() + 25
+        
+        # Create a toplevel window
+        self.tooltip_window = tw = tk.Toplevel(self.widget)
+        # Remove the window decorations
+        tw.wm_overrideredirect(True)
+        tw.wm_geometry(f"+{x}+{y}")
+        
+        label = ttk.Label(tw, text=self.text, background="#2E2E2E", 
+                         foreground="white", relief="solid", borderwidth=1,
+                         padding=(5, 3))
+        label.pack()
+    
+    def hide_tooltip(self, event=None):
+        """Hide the tooltip"""
+        if self.tooltip_window:
+            self.tooltip_window.destroy()
+            self.tooltip_window = None
+    
+    def update_text(self, new_text):
+        """Update the tooltip text"""
+        self.text = new_text
+
 class StreamerApp:
     """Main application class for EZ Streaming"""
     
@@ -87,15 +123,22 @@ class StreamerApp:
     def on_close(self):
         """Handle window close event"""
         if self.changes_made:
-            # This is the only popup in the app - for unsaved changes on exit
             from tkinter import messagebox
-            result = messagebox.askyesno(
-                "Unsaved Changes",
-                "You have unsaved changes. Do you want to close without saving?",
-                icon="warning"
-            )
-            if not result:  # User clicked "No"
-                return  # Don't close the window
+            try:
+                result = messagebox.askyesnocancel(
+                    "Unsaved Changes",
+                    f"You have unsaved changes in the profile '{self.current_profile}'. Do you want to save them before closing?",
+                    icon="warning"
+                )
+                # None means Cancel or X button
+                if result is None:
+                    return  # Don't close the window
+                if result is True:  # Explicit Yes
+                    self.save_config(False)  # Save before closing
+                # If False (No), continue without saving
+            except Exception as e:
+                print(f"Error in message box: {e}")
+                return  # Don't close on error
                 
         # Close the window
         self.root.destroy()
@@ -151,6 +194,85 @@ class StreamerApp:
         self.error_color = "#FF5252"     # Red
         self.warning_color = "#FFC107"   # Amber - for warnings/notifications
 
+    def delete_current_profile(self):
+        """Delete the currently selected profile"""
+        current_profile = self.profile_var.get()
+    
+        # Check if this is the default profile
+        if current_profile == "Default":
+            self.show_status("Cannot delete the default profile", self.error_color, blink=True)
+            return
+    
+        # Check for unsaved changes
+        if self.changes_made:
+            from tkinter import messagebox
+            try:
+                result = messagebox.askyesnocancel(
+                    "Unsaved Changes",
+                    f"You have unsaved changes in the profile '{current_profile}'. Do you want to save them before deleting?",
+                    icon="warning"
+                )
+                # None means Cancel or X button
+                if result is None:
+                    return
+                if result is True:  # Explicit Yes
+                    self.save_config(False)  # Save without showing confirmation
+                # If False (No), continue without saving
+            except Exception as e:
+                print(f"Error in message box: {e}")
+                return  # Don't proceed on error
+    
+        # Confirm deletion
+        from tkinter import messagebox
+        try:
+            result = messagebox.askyesno(
+                "Confirm Deletion",
+                f"Are you sure you want to delete the '{current_profile}' profile?",
+                icon="warning"
+            )
+            # Explicitly handle both None and False as "No"
+            if result is None or result is False:
+                return
+        except Exception as e:
+            print(f"Error in message box: {e}")
+            return  # Don't proceed on error
+    
+        # Delete the profile
+        if current_profile in self.profiles:
+            del self.profiles[current_profile]
+        
+            # Switch to Default profile
+            self.current_profile = "Default"
+            self.profile_var.set("Default")
+            self.load_profile("Default")
+        
+            # Update the combobox
+            self.update_profile_combobox()
+        
+            # Update delete button state
+            self.update_delete_button_state()
+        
+            # Show success message
+            self.show_status(f"Profile '{current_profile}' deleted", self.warning_color)
+        
+            # Save the updated configuration
+            self.save_config()
+
+    def update_delete_button_state(self):
+        """Update the state of the delete profile button based on current profile"""
+        if hasattr(self, 'delete_profile_btn'):
+            current_profile = self.profile_var.get()
+            if current_profile == "Default":
+                self.delete_profile_btn.configure(state="disabled")
+                # Update tooltip text
+                if hasattr(self, 'delete_tooltip'):
+                    self.delete_tooltip.update_text("Cannot remove default profile")
+            else:
+                self.delete_profile_btn.configure(state="normal")
+                # Update tooltip text
+                if hasattr(self, 'delete_tooltip'):
+                    self.delete_tooltip.update_text("Remove Profile")
+
     def create_widgets(self):
         """Create and arrange all UI widgets"""
         # Main container frame
@@ -188,6 +310,18 @@ class StreamerApp:
                                             style='Purple.TCombobox')
         self.profile_combobox.pack(side=tk.LEFT, fill=tk.X, expand=True)
         self.profile_combobox.bind("<<ComboboxSelected>>", self.change_profile)
+
+        self.delete_profile_btn = ttk.Button(profile_frame, 
+                                   text="🗑", 
+                                   width=2,
+                                   command=self.delete_current_profile)
+        self.delete_profile_btn.pack(side=tk.LEFT, padx=(2, 10))
+
+        self.style.configure('Trash.TButton', font=('Arial', 12))  # Define larger font style
+        self.delete_profile_btn.configure(style='Trash.TButton')  # Apply style to the button
+
+        # Create tooltip for the delete button
+        self.delete_tooltip = ToolTip(self.delete_profile_btn, "Remove Profile")
         
         # Ensure combobox styling - explicitly set dropdown foreground color
         self.style.map('Purple.TCombobox', 
@@ -210,6 +344,8 @@ class StreamerApp:
                                    width=2,
                                    command=self.new_profile_from_entry)
         add_profile_btn.pack(side=tk.LEFT, padx=(2, 0))
+
+        self.add_tooltip = ToolTip(add_profile_btn, "Add New Profile")
         
         # Program list header
         list_header_frame = ttk.Frame(main_frame)
@@ -392,6 +528,8 @@ class StreamerApp:
                                command=lambda i=idx: self.remove_program(i))
         remove_btn.pack(side=tk.LEFT)
 
+        self.remove_tooltip = ToolTip(remove_btn, "Remove App")
+
         # Status indicator
         status_var = tk.StringVar(value="Ready")
         status_label = ttk.Label(program_entry, textvariable=status_var, width=10)
@@ -560,17 +698,40 @@ class StreamerApp:
     def remove_program(self, idx):
         """Remove a program from the list"""
         if 0 <= idx < len(self.programs):
-            self.programs[idx]["frame"].destroy()
+            # Get program name for the confirmation dialog
+            program = self.programs[idx]
+            app_name = program["name_var"].get() or os.path.basename(program["path_var"].get()) or "Unknown"
+        
+            # Show confirmation dialog
+            from tkinter import messagebox
+            try:
+                result = messagebox.askyesnocancel(
+                    "Confirm Removal",
+                    f"Remove app '{app_name}'?",
+                    icon="warning"
+                )      
+                # None means Cancel or X button
+                if result is None:
+                    return  # Don't close the window
+                if result is True:  # Explicit Yes
+                    self.save_config(False)  # Save before closing
+                # If False (No), continue without saving
+            except Exception as e:
+                print(f"Error in message box: {e}")
+                return  # Don't close on error
+        
+            # If confirmed, remove the program
+            program["frame"].destroy()
             self.programs.pop(idx)
-            
+        
             # Mark that changes have been made
             self.mark_unsaved_changes()
-            
+        
             # Refresh UI
             self.refresh_program_list()
-            
-            # Show status message
-            self.show_status("Program removed", self.warning_color)
+        
+            # Show status message (already amber from mark_unsaved_changes)
+            self.show_status(f"Program '{app_name}' removed. Remember to save your profile.", self.warning_color)
 
     def refresh_program_list(self):
         """Refresh the program list UI from data"""
@@ -617,8 +778,26 @@ class StreamerApp:
         if selected_profile != self.current_profile:
             # Check for unsaved changes
             if self.changes_made:
-                self.show_status("Warning: Changes not saved! Click Save Profile to save them.", 
-                              self.error_color, 5000, blink=True)
+                from tkinter import messagebox
+                try:
+                    result = messagebox.askyesnocancel(
+                        "Unsaved Changes",
+                        f"You have unsaved changes in the profile '{self.current_profile}'. Do you want to save them before switching?",
+                        icon="warning"
+                    )
+                    # None means Cancel or X button
+                    if result is None:
+                        # Revert combobox selection to current profile
+                        self.profile_var.set(self.current_profile)
+                        return
+                    if result is True:  # User clicked "Yes"
+                        self.save_config(False)  # Save without showing confirmation
+                    # If False (No), continue without saving
+                except Exception as e:
+                    print(f"Error in message box: {e}")
+                    # Revert selection on error
+                    self.profile_var.set(self.current_profile)
+                    return
             
             # Load new profile
             self.current_profile = selected_profile
@@ -626,6 +805,9 @@ class StreamerApp:
             
             # Reset changes flag
             self.changes_made = False
+
+            # Update delete button state
+            self.update_delete_button_state()
             
             # Show status message
             self.show_status(f"Switched to profile: {selected_profile}", self.launched_color)
@@ -720,3 +902,6 @@ class StreamerApp:
         
         # Initial loading is complete
         self.is_initial_loading = False
+
+         # Initialize delete button state
+        self.update_delete_button_state()
