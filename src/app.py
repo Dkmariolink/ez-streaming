@@ -78,7 +78,7 @@ class StreamerApp:
     def run(self):
         """Start the application UI and main loop"""
         self.root = tk.Tk()
-        self.root.title("EZ Streaming")
+        self.root.title("EZ Streaming α")
         self.root.geometry("700x550")  # Increased window size
         self.root.minsize(700, 550)    # Increased minimum size
 
@@ -284,7 +284,7 @@ class StreamerApp:
         header_frame.pack(fill=tk.X, pady=(0, 10))
         
         title_label = ttk.Label(header_frame, 
-                               text="EZ Streaming", 
+                               text="EZ Streaming α", 
                                font=('Arial', 18, 'bold'), 
                                foreground=self.accent_color)
         title_label.pack(side=tk.LEFT)
