@@ -524,9 +524,10 @@ class StreamerApp:
         
         # Remove button
         remove_btn = ttk.Button(program_entry, 
-                               text="✕",
-                               command=lambda i=idx: self.remove_program(i))
-        remove_btn.pack(side=tk.LEFT)
+                       text="✕",
+                       width=2,  # Add explicit width
+                       command=lambda i=idx: self.remove_program(i))
+        remove_btn.pack(side=tk.LEFT, padx=(0, 5))  # Add padding
 
         self.remove_tooltip = ToolTip(remove_btn, "Remove App")
 
