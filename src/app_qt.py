@@ -24,9 +24,9 @@ import time
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                               QHBoxLayout, QLabel, QComboBox, QPushButton, 
                               QLineEdit, QListWidget, QListWidgetItem, QFrame,
-                              QMessageBox, QFileDialog, QInputDialog)
-from PySide6.QtCore import Qt, Signal, QSize, QTimer
-from PySide6.QtGui import QIcon, QPixmap, QBrush, QColor
+                               QMessageBox, QFileDialog, QInputDialog, QGraphicsOpacityEffect) # Added QGraphicsOpacityEffect
+from PySide6.QtCore import Qt, Signal, QSize, QTimer, QPropertyAnimation, QEasingCurve, QRect, QEvent # Added QEvent
+from PySide6.QtGui import QIcon, QPixmap, QBrush, QColor, QFont, QFontDatabase
 
 from config_manager import ConfigManager
 
@@ -47,6 +47,27 @@ class ProgramWidget(QWidget):
         self.setup_ui()
         self.connect_signals()
         
+        # Install event filter on line edits for row selection
+        self.name_edit.installEventFilter(self)
+        self.path_edit.installEventFilter(self)
+        
+    def eventFilter(self, watched, event):
+        """Filter events for line edits to trigger row selection."""
+        if watched in (self.name_edit, self.path_edit) and event.type() == QEvent.Type.MouseButtonPress:
+            # Find the main window and the list widget
+            app_window = self.window()
+            if isinstance(app_window, StreamerApp):
+                list_widget = app_window.program_list
+                # Find the QListWidgetItem associated with this ProgramWidget
+                for i in range(list_widget.count()):
+                    item = list_widget.item(i)
+                    widget = list_widget.itemWidget(item)
+                    if widget == self:
+                        list_widget.setCurrentItem(item)
+                        break
+        # Pass the event along
+        return super().eventFilter(watched, event)
+
     def setup_ui(self):
         """Create and arrange widgets"""
         layout = QHBoxLayout(self)
@@ -82,30 +103,54 @@ class ProgramWidget(QWidget):
         # Button layout with consistent sizing
         self.button_layout = QHBoxLayout()
         self.button_layout.setSpacing(8)  # Default spacing between buttons
+
+        # Common button style - ensure consistent appearance
+        button_style = """
+            QPushButton {
+                background-color: #772CE8;
+                color: #FFFFFF;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 4px;
+                font-weight: bold;
+                font-size: 10pt;
+            }
+            QPushButton:hover {
+                background-color: #9146FF;
+            }
+            QPushButton:disabled {
+                background-color: #555555;
+                color: #AAAAAA;
+        }
+    """
     
         # Browse button
         self.browse_btn = QPushButton("Browse")
         self.browse_btn.setFixedWidth(80)  # Slightly wider
         self.browse_btn.setMinimumHeight(32)  # Match height of other elements
+        self.browse_btn.setStyleSheet(button_style)
         self.button_layout.addWidget(self.browse_btn)
     
         # Launch button
         self.launch_btn = QPushButton("Launch")
         self.launch_btn.setFixedWidth(80)  # Slightly wider
         self.launch_btn.setMinimumHeight(32)  # Match height of other elements
+        self.launch_btn.setStyleSheet(button_style)
         self.button_layout.addWidget(self.launch_btn)
         
         # Close button (initially hidden)
         self.close_btn = QPushButton("Close")
         self.close_btn.setFixedWidth(80)  # Slightly wider
         self.close_btn.setMinimumHeight(32)  # Match height of other elements
+        self.close_btn.setStyleSheet(button_style)
         self.close_btn.setVisible(False)  # Hidden by default
+        self.close_btn.setToolTip("Close App") # Add tooltip here
         self.button_layout.addWidget(self.close_btn)
     
         # Remove button
         self.remove_btn = QPushButton("✕")
         self.remove_btn.setFixedSize(32, 32)  # Square button with increased size
-        self.remove_btn.setStyleSheet("font-size: 14px;")  # Larger icon
+        self.remove_btn.setStyleSheet(button_style + "font-size: 14px;")  # Larger icon
         self.remove_btn.setToolTip("Remove App")  # Add the correct tooltip
         self.button_layout.addWidget(self.remove_btn)
     
@@ -116,7 +161,7 @@ class ProgramWidget(QWidget):
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.button_layout.addWidget(self.status_label)
     
-        layout.addLayout(self.button_layout, 1)  # Reduced stretch so buttons don't get too separated
+        layout.addLayout(self.button_layout, 0)  # Remove stretch, let line edits expand
     
         self.setLayout(layout)
         
@@ -196,7 +241,7 @@ class ProgramWidget(QWidget):
         """Adjust the widget layout when the close button appears/disappears"""
         if self.close_btn.isVisible():
             # Increase spacing in the button layout
-            self.button_layout.setSpacing(12)  # Increased spacing
+            self.button_layout.setSpacing(16)  # Increased spacing
         else:
             # Reset spacing to default
             self.button_layout.setSpacing(8)  # Default spacing
@@ -208,7 +253,7 @@ class ProgramWidget(QWidget):
             self.reset_status()
             self.close_btn.setVisible(False)
             self.adjust_layout_for_close_button()
-            if hasattr(self, 'process_timer') and self.process_timer.isActive():
+            if hasattr(self, 'process_timer') and self.process_timer is not None and self.process_timer.isActive():
                 self.process_timer.stop()
             return
         
@@ -219,6 +264,7 @@ class ProgramWidget(QWidget):
                 self.status_label.setText("Launched")
                 self.status_label.setStyleSheet("color: #00C853;")
                 self.close_btn.setVisible(True)
+                self.adjust_layout_for_close_button()
             else:
                 # Process has exited
                 self.reset_status()
@@ -232,7 +278,7 @@ class ProgramWidget(QWidget):
                     app_window = self.window()
                     app_window.untrack_process(path)
                 
-                if hasattr(self, 'process_timer') and self.process_timer.isActive():
+                if hasattr(self, 'process_timer') and self.process_timer is not None and self.process_timer.isActive():
                     self.process_timer.stop()
         except Exception:
             # In case of any error, reset the status
@@ -247,12 +293,12 @@ class ProgramWidget(QWidget):
                 app_window = self.window()
                 app_window.untrack_process(path)
                 
-            if hasattr(self, 'process_timer') and self.process_timer.isActive():
+            if hasattr(self, 'process_timer') and self.process_timer is not None and self.process_timer.isActive():
                 self.process_timer.stop()
     
     def close_program(self):
         """Close the running program"""
-        if self.process and self.process.poll() is None:
+        if hasattr(self, 'process') and self.process and self.process.poll() is None:
             path = self.path_edit.text()
             
             try:
@@ -364,6 +410,9 @@ class StreamerApp(QMainWindow):
         self.is_initial_loading = True
         self.default_profile_display_name = "Default"  # Display name for Default profile
         self.running_processes = {}  # Store dictionary of running processes: {path: process_object}
+        self.summer_blaster_font = None # Initialize font attribute
+        self.title_opacity_effect = None # For animation
+        self.title_animation = None # For animation
         
         # Disable focus rectangles globally
         self.setStyleSheet("QWidget:focus { outline: none; }")
@@ -376,14 +425,15 @@ class StreamerApp(QMainWindow):
         self.setMinimumSize(950, 650)  # Further increased minimum size
         self.resize(1000, 700)  # Set a larger default size
         
-        # Set application icon
-        self.setup_app_icon()
+        # Set application icon and font 
+        self.setup_app_icon_and_font()
         
-        # Set initial state for delete button
+        # Set initial state for delete and rename buttons
         self.update_delete_button_state()
+        self.update_rename_button_state() 
         
         self.is_initial_loading = False
-    
+        
     def track_process(self, path, process):
         """Add a process to the global tracking dictionary"""
         self.running_processes[path] = process
@@ -396,10 +446,9 @@ class StreamerApp(QMainWindow):
             del self.running_processes[path]
         # Update the Close All button
         self.update_close_all_button()
-        
-    def setup_app_icon(self):
-        """Set up application icon"""
-        icon_path = None
+
+    # Helper function to find asset paths correctly
+    def find_asset_path(self, asset_name):
         if getattr(sys, 'frozen', False):
             # Running as compiled executable
             if hasattr(sys, '_MEIPASS'):
@@ -408,14 +457,47 @@ class StreamerApp(QMainWindow):
             else:
                 # Fallback to executable directory
                 base_dir = os.path.dirname(sys.executable)
-            icon_path = os.path.join(base_dir, "assets", "icon.ico")
+            asset_path = os.path.join(base_dir, "assets", asset_name)
         else:
             # Running as script
-            current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            icon_path = os.path.join(current_dir, "assets", "icon.ico")
+            # Assuming src is one level down from project root where assets is
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            base_dir = os.path.dirname(current_dir) # Go up one level from src
+            asset_path = os.path.join(base_dir, "assets", asset_name)
+        
+        print(f"Calculated asset path for {asset_name}: {asset_path}") # Debug print
+        return asset_path if os.path.exists(asset_path) else None
+        
+    def setup_app_icon_and_font(self):
+        """Set up application icon and custom font"""
+        icon_path = self.find_asset_path("icon.ico")
+        font_path = self.find_asset_path(os.path.join("fonts", "SummerBlaster.otf"))
             
-        if icon_path and os.path.exists(icon_path):
+        if icon_path:
             self.setWindowIcon(QIcon(icon_path))
+
+        # Print debug info
+        print(f"Looking for font at: {font_path}")
+        print(f"Font exists: {font_path is not None}")
+    
+        # Load the font if it exists
+        if font_path:
+            font_id = QFontDatabase.addApplicationFont(font_path)
+            if font_id != -1:
+                font_families = QFontDatabase.applicationFontFamilies(font_id)
+                print(f"Font loaded successfully. Available families: {font_families}")
+                if font_families:
+                    self.summer_blaster_font = font_families[0]
+                    print(f"Stored font family '{self.summer_blaster_font}'")
+                else:
+                     print("Warning: Font loaded but no families found.")
+                     self.summer_blaster_font = None # Ensure it's None if loading failed
+            else:
+                print(f"Failed to load font: {font_path}, error code: {font_id}")
+                self.summer_blaster_font = None
+        else:
+            print(f"Font file not found.")
+            self.summer_blaster_font = None
     
     def setup_ui(self):
         """Set up the user interface"""
@@ -432,10 +514,39 @@ class StreamerApp(QMainWindow):
         header_frame = QFrame()
         header_layout = QHBoxLayout(header_frame)
         header_layout.setContentsMargins(0, 0, 0, 10)
+        header_layout.setAlignment(Qt.AlignmentFlag.AlignCenter) # Center items in the layout
+
+        # --- New Title Area ---
+        # Use title.png as a single label
+        self.title_image_label = QLabel() # Store as instance variable
+        title_logo_path = self.find_asset_path("title.png") 
+        if title_logo_path:
+            pixmap = QPixmap(title_logo_path)
+            # Scale the logo to a height of 80px
+            scaled_pixmap = pixmap.scaledToHeight(80, Qt.TransformationMode.SmoothTransformation)
+            self.title_image_label.setPixmap(scaled_pixmap) 
+            self.title_image_label.setFixedSize(scaled_pixmap.size()) # Set size to scaled pixmap
+
+            # Add opacity effect for animation
+            self.title_opacity_effect = QGraphicsOpacityEffect(self.title_image_label)
+            self.title_image_label.setGraphicsEffect(self.title_opacity_effect)
+
+            # Setup animation using keyframes for smoother pulse
+            self.title_animation = QPropertyAnimation(self.title_opacity_effect, b"opacity")
+            self.title_animation.setDuration(3000) # Slower duration (3 seconds per full cycle)
+            self.title_animation.setLoopCount(-1) # Loop indefinitely
+            self.title_animation.setKeyValueAt(0.0, 1.0)   # Fully visible at start
+            self.title_animation.setKeyValueAt(0.5, 0.85)  # Dimmed at midpoint
+            self.title_animation.setKeyValueAt(1.0, 1.0)   # Fully visible at end
+            self.title_animation.start()
+
+        else:
+            # Fallback text if title.png not found
+            self.title_image_label.setText("EZ Streaming") 
+            self.title_image_label.setStyleSheet(f"color: {self.accent_color}; font-size: 24pt; font-weight: bold;")
         
-        self.title_label = QLabel("EZ Streaming")
-        self.title_label.setObjectName("title_label")
-        header_layout.addWidget(self.title_label)
+        header_layout.addWidget(self.title_image_label) # Add the single title label
+        # --- End New Title Area ---
         
         main_layout.addWidget(header_frame)
         
@@ -534,9 +645,9 @@ class StreamerApp(QMainWindow):
             QListWidget::item {
                 background-color: #2A2A2A;
                 border-radius: 4px;
-                margin: 3px 0;
-                padding: 4px;
-                min-height: 38px;
+                margin: 5px 0;  /* Increased vertical margin for more spacing */
+                padding: 6px;   /* Increased padding */
+                min-height: 40px; /* Slightly increased minimum height */
             }
             QListWidget::item:selected {
                 background-color: #3D3D3D;
@@ -651,11 +762,7 @@ class StreamerApp(QMainWindow):
                 font-size: 10pt;
             }}
             
-            #title_label {{
-                color: {self.accent_color}; 
-                font-size: 18pt;
-                font-weight: bold;
-            }}
+            /* Remove specific #title_label styling */
             
             QLineEdit, QComboBox {{
                 background-color: #2E2E2E;
@@ -685,6 +792,14 @@ class StreamerApp(QMainWindow):
                 background-color: #2E2E2E;
                 color: {self.fg_color};
                 selection-background-color: {self.accent_color};
+            }}
+            
+            QToolTip {{
+                background-color: white;
+                color: black;
+                border: 1px solid #AAAAAA;
+                padding: 4px;
+                font-size: 9pt; 
             }}
         """)
     
@@ -728,9 +843,9 @@ class StreamerApp(QMainWindow):
         # Add to program list
         self.program_list.addItem(item)
         
-        # Get the size hint and add just a small amount of extra height
+        # Get the size hint and add a bit more extra height to prevent clipping
         size_hint = program_widget.sizeHint()
-        item.setSizeHint(QSize(size_hint.width(), size_hint.height() + 4))  # Add minimal extra height
+        item.setSizeHint(QSize(size_hint.width(), size_hint.height() + 12)) # Further increased extra height
         
         self.program_list.setItemWidget(item, program_widget)
         
@@ -895,8 +1010,11 @@ class StreamerApp(QMainWindow):
         if not profile_name:
             self.show_status("Please enter a profile name", self.warning_color)
             return
-            
-        if profile_name in self.profiles:
+        
+        # Check if name conflicts with an existing profile or the default display name
+        original_display_name = self.default_profile_display_name
+        
+        if profile_name in self.profiles or profile_name == original_display_name:
             # Generate a numbered alternative
             numbered_name = self.generate_numbered_profile_name(profile_name)
             
@@ -913,61 +1031,109 @@ class StreamerApp(QMainWindow):
                 profile_name = numbered_name
             else:
                 return
-            
-        # Create new profile with one empty program entry
-        self.profiles[profile_name] = [{"name": "", "path": ""}]
-        self.update_profile_combobox()
-        self.profile_combo.setCurrentText(profile_name)
-        # Change profile will be triggered by the setCurrentText
         
+        # Create new profile with EXACTLY TWO empty program entries for consistency
+        self.profiles[profile_name] = [
+            {"name": "", "path": ""}, 
+            {"name": "", "path": ""}
+        ]
+        
+        # Clear the program list BEFORE loading the new profile to prevent duplication
+        # Block signals to prevent double loading
+        self.profile_combo.blockSignals(True)
+
+        # Clear the program list BEFORE loading the new profile to prevent duplication
+        self.program_list.clear()
+        self.programs = []
+    
+        # Update UI (add item to combobox)
+        self.update_profile_combobox()
+    
+        # Set the internal current profile variable
+        self.current_profile = profile_name
+    
+        # Find and set the index in the combobox without triggering signals
+        index = self.profile_combo.findText(profile_name)
+        if index != -1:
+            self.profile_combo.setCurrentIndex(index)
+        
+        # Manually load the profile exactly once
+        self.load_profile(profile_name)
+    
         # Clear the entry field
         self.new_profile_entry.clear()
-        
+    
         # Mark changes as unsaved
         self.changes_made = True
-        
+    
+        # Update button states immediately for the new profile
+        self.update_delete_button_state()
+        self.update_rename_button_state()
+
+        # Re-enable signals
+        self.profile_combo.blockSignals(False)
+
         # Show status message
         self.show_status(f"Created new profile: {profile_name}", self.launched_color)
     
     def duplicate_current_profile(self):
         """Duplicate the current profile"""
-        current_profile = self.profile_combo.currentText()
-        
+        # Get the internal name of the profile to duplicate
+        source_display_name = self.profile_combo.currentText()
+        source_internal_name = "Default" if source_display_name == self.default_profile_display_name else source_display_name
+
         # Create a new profile name (Profile 1, Profile 2, etc.)
         counter = 1
-        new_profile_name = f"{current_profile} (Copy)"
+        # Use source_display_name here instead of undefined current_profile
+        new_profile_name = f"{source_display_name} (Copy)"
         while new_profile_name in self.profiles:
             counter += 1
-            new_profile_name = f"{current_profile} (Copy {counter})"
+            # Use source_display_name here instead of undefined current_profile
+            new_profile_name = f"{source_display_name} (Copy {counter})"
         
-        # Create a deep copy of the current profile
-        self.profiles[new_profile_name] = []
-        
-        # Handle special case for default profile
-        if current_profile == self.default_profile_display_name:
-            # Copy from the actual "Default" profile
-            for program in self.programs:
-                widget = program["widget"]
-                self.profiles[new_profile_name].append({
-                    "name": widget.get_name(),
-                    "path": widget.get_path()
-                })
+        # Create a deep copy of the source profile's data directly from self.profiles
+        if source_internal_name in self.profiles:
+             # Use list comprehension for a clean deep copy of the list of dicts
+            source_data = [item.copy() for item in self.profiles[source_internal_name]]
+            self.profiles[new_profile_name] = source_data
         else:
-            # For regular profiles
-            for program in self.programs:
-                widget = program["widget"]
-                self.profiles[new_profile_name].append({
-                    "name": widget.get_name(),
-                    "path": widget.get_path()
-                })
+             # Fallback if source somehow doesn't exist (shouldn't happen)
+            self.profiles[new_profile_name] = []
+
+        # Make sure the duplicated profile has at least 2 entries
+        while len(self.profiles[new_profile_name]) < 2:
+            self.profiles[new_profile_name].append({"name": "", "path": ""})
+
+        # Block signals for controlled update
+        self.profile_combo.blockSignals(True)
+
+        # Clear the program list BEFORE loading the new profile
+        self.program_list.clear()
+        self.programs = []    
         
-        # Update UI
+        # Update UI (add item to combobox)
         self.update_profile_combobox()
-        self.profile_combo.setCurrentText(new_profile_name)
-        # Change profile will be triggered by the setCurrentText
         
-        # Mark changes as unsaved - this is what was missing
+        # Set the internal current profile variable
+        self.current_profile = new_profile_name
+        
+        # Find and set the index in the combobox without triggering signals
+        index = self.profile_combo.findText(new_profile_name)
+        if index != -1:
+            self.profile_combo.setCurrentIndex(index)
+
+        # Manually load the profile exactly once
+        self.load_profile(new_profile_name)
+        
+        # Mark changes as unsaved
         self.changes_made = True
+
+        # Update button states immediately for the new profile
+        self.update_delete_button_state()
+        self.update_rename_button_state()
+
+        # Re-enable signals
+        self.profile_combo.blockSignals(False)
         
         # Show status message
         self.show_status(f"Created duplicate profile: {new_profile_name}", self.launched_color)
@@ -975,8 +1141,17 @@ class StreamerApp(QMainWindow):
     def rename_current_profile(self):
         """Rename the current profile"""
         current_profile = self.profile_combo.currentText()
+        # Remove (default) suffix if present
+        if " (default)" in current_profile:
+            current_profile = current_profile.replace(" (default)", "")
+        
         is_default = (current_profile == self.default_profile_display_name)
         
+        # Prevent renaming of default profile
+        if is_default:
+            self.show_status("Cannot rename the default profile", self.error_color)
+            return
+    
         # Get new name from user
         new_name, ok = QInputDialog.getText(
             self, 
@@ -988,8 +1163,13 @@ class StreamerApp(QMainWindow):
         # Validate input
         if not ok or not new_name or new_name == current_profile:
             return
-            
-        if new_name in self.profiles and new_name != current_profile:
+        
+        # Check if the new name conflicts with existing profiles
+        conflicts_with_default = (new_name == "Default" and not is_default)
+        conflicts_with_existing = (new_name in self.profiles and new_name != current_profile 
+                          and not (is_default and new_name == "Default"))
+        
+        if conflicts_with_default or conflicts_with_existing:
             # Generate a numbered alternative
             numbered_name = self.generate_numbered_profile_name(new_name)
             
@@ -1007,14 +1187,25 @@ class StreamerApp(QMainWindow):
             else:
                 return
         
-        # Store profile data
+        # Store profile data - always create a deep copy
         if is_default:
-            profile_data = self.profiles["Default"]
+            # Make a deep copy of the profile data
+            profile_data = [{k: v for k, v in item.items()} for item in self.profiles["Default"]]
+            
+            # Make sure it has at least two entries
+            while len(profile_data) < 2:
+                profile_data.append({"name": "", "path": ""})
         else:
-            profile_data = self.profiles[current_profile]
+            # Make a deep copy of the profile data
+            profile_data = [{k: v for k, v in item.items()} for item in self.profiles[current_profile]]
+            
+            # Make sure it has at least two entries
+            while len(profile_data) < 2:
+                profile_data.append({"name": "", "path": ""})
         
         # Rename the profile
         if not is_default:
+            # For regular profiles, update the key in the dictionary
             del self.profiles[current_profile]
             self.profiles[new_name] = profile_data
             self.current_profile = new_name
@@ -1022,119 +1213,150 @@ class StreamerApp(QMainWindow):
         else:
             # For Default profile, just change the display name
             self.default_profile_display_name = new_name
+            # Ensure Default profile data is preserved
+            self.profiles["Default"] = profile_data
             self.show_status(f"Default profile renamed to '{new_name}' (still functions as default)", self.launched_color)
         
         # Update UI
         self.update_profile_combobox()
         
+        # Set current profile explicitly to ensure consistency
+        if is_default:
+            display_name = new_name
+            if new_name != "Default":
+                display_name = f"{new_name} (default)"
+            self.profile_combo.setCurrentText(display_name)
+        else:
+            self.profile_combo.setCurrentText(new_name)
+        
         # Mark as changed
         self.changes_made = True
+        
+        # Save configuration immediately for consistency
+        self.save_config(False)
+        
+        # Force refresh the program list to ensure consistent display
+        self.load_profile(self.current_profile)
     
     def delete_current_profile(self):
         """Delete the currently selected profile"""
-        current_profile = self.profile_combo.currentText()
-        is_default = (current_profile == self.default_profile_display_name)
-    
+        current_profile_display = self.profile_combo.currentText()
+        # Get internal name for dictionary key
+        current_profile_internal = "Default" if current_profile_display == self.default_profile_display_name else current_profile_display
+            
+        is_default = (current_profile_internal == "Default")
+
         # Check if this is the default profile
         if is_default:
             self.show_status("Cannot delete the default profile", self.error_color)
             return
-    
+
         # Check for unsaved changes
         if self.changes_made:
             result = QMessageBox.question(
                 self,
                 "Unsaved Changes",
-                f"You have unsaved changes in the profile '{current_profile}'. Do you want to save them before deleting?",
+                f"You have unsaved changes in the profile '{current_profile_display}'. Do you want to save them before deleting?",
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel,
                 QMessageBox.StandardButton.Cancel
             )
-            
+        
             if result == QMessageBox.StandardButton.Cancel:
                 return
             elif result == QMessageBox.StandardButton.Yes:
                 self.save_config(False)  # Save without showing confirmation
-    
+
         # Confirm deletion
         result = QMessageBox.question(
             self,
             "Confirm Deletion",
-            f"Are you sure you want to delete the '{current_profile}' profile?",
+            f"Are you sure you want to delete the '{current_profile_display}' profile?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No
         )
-        
+    
         if result != QMessageBox.StandardButton.Yes:
             return
-    
+
         # Delete the profile
-        if current_profile in self.profiles:
-            del self.profiles[current_profile]
-        
-            # Switch to Default profile
+        if current_profile_internal in self.profiles:
+            # Delete from the dictionary FIRST
+            del self.profiles[current_profile_internal]
+
+            # Switch internal state to Default profile BEFORE saving
             self.current_profile = "Default"
-            self.profile_combo.setCurrentText(self.default_profile_display_name)
-        
-            # Update delete button state
-            self.update_delete_button_state()
-        
+
+            # Switch UI to Default profile *before* saving
+            self.load_profile("Default")
+
+            # Save the updated configuration immediately 
+            self.save_config(False) 
+
+            # Update UI to show the default profile in the combobox (redundant after load_profile, but safe)
+            self.update_profile_combobox() 
+            
+            # Update delete and rename button states for the now-current Default profile
+            self.update_delete_button_state() 
+            self.update_rename_button_state() 
+    
             # Show success message
-            self.show_status(f"Profile '{current_profile}' deleted", self.warning_color)
-        
-            # Save the updated configuration
-            self.save_config()
+            self.show_status(f"Profile '{current_profile_display}' deleted", self.warning_color)
     
     def change_profile(self, profile_name=None):
         """Change to a different profile"""
+        # If coming from combobox selection
         if profile_name is None:
             display_name = self.profile_combo.currentText()
+            
+            
             # Convert display name to internal name if needed
             if display_name == self.default_profile_display_name:
                 profile_name = "Default"
             else:
                 profile_name = display_name
+        
+        # Check if we're actually changing profiles
+        if profile_name == self.current_profile:
+            return  # No change needed, prevent duplicate creation
+        
+        # Check for unsaved changes
+        if self.changes_made:
+            result = QMessageBox.question(
+                self,
+                "Unsaved Changes",
+                f"You have unsaved changes in the profile '{self.current_profile}'. Do you want to save them before switching?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel,
+                QMessageBox.StandardButton.Cancel
+            )
             
-        if profile_name != self.current_profile:
-            # Check for unsaved changes
-            if self.changes_made:
-                result = QMessageBox.question(
-                    self,
-                    "Unsaved Changes",
-                    f"You have unsaved changes in the profile '{self.current_profile}'. Do you want to save them before switching?",
-                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel,
-                    QMessageBox.StandardButton.Cancel
-                )
-                
-                if result == QMessageBox.StandardButton.Cancel:
-                    # Revert combobox selection to current profile
-                    if self.current_profile == "Default":
-                        self.profile_combo.setCurrentText(self.default_profile_display_name)
-                    else:
-                        self.profile_combo.setCurrentText(self.current_profile)
-                    return
-                elif result == QMessageBox.StandardButton.Yes:
-                    self.save_config(False)  # Save without showing confirmation
-            
-            # Load new profile
-            self.current_profile = profile_name
-            self.load_profile(profile_name)
-            
-            # Reset changes flag
-            self.changes_made = False
-
-            # Update delete button state
-            self.update_delete_button_state()
-            
-            # Show status message
-            if profile_name == "Default":
-                self.show_status(f"Switched to profile: {self.default_profile_display_name}", self.launched_color)
-            else:
-                self.show_status(f"Switched to profile: {profile_name}", self.launched_color)
+            if result == QMessageBox.StandardButton.Cancel:
+                # Revert combobox selection to current profile
+                self.update_profile_combobox()  # Reset the combo box
+                return
+            elif result == QMessageBox.StandardButton.Yes:
+                self.save_config(False)  # Save without showing confirmation
+        
+        # Load new profile
+        self.current_profile = profile_name
+        self.load_profile(profile_name)
+        
+        # Reset changes flag
+        self.changes_made = False
+        
+        # Update delete and rename button states
+        self.update_delete_button_state()
+        self.update_rename_button_state() # Add call here
+        
+        # Show status message
+        if profile_name == "Default":
+            self.show_status(f"Switched to profile: {self.default_profile_display_name}", self.launched_color)
+        else:
+            self.show_status(f"Switched to profile: {profile_name}", self.launched_color)
     
     def update_delete_button_state(self):
         """Update the state of the delete profile button based on current profile"""
-        current_profile = self.profile_combo.currentText()
-        is_default = (current_profile == self.default_profile_display_name)
+        # Check against the internal current_profile name
+        is_default = (self.current_profile == "Default")
         
         self.delete_profile_btn.setEnabled(not is_default)
         
@@ -1142,61 +1364,162 @@ class StreamerApp(QMainWindow):
             self.delete_profile_btn.setToolTip("Cannot remove default profile")
         else:
             self.delete_profile_btn.setToolTip("Remove Profile")
+
+    def update_rename_button_state(self):
+        """Update the state of the rename profile button based on current profile"""
+        # Check against the internal current_profile name
+        is_default = (self.current_profile == "Default")
+
+        self.rename_profile_btn.setEnabled(not is_default)
+
+        if is_default:
+            self.rename_profile_btn.setToolTip("Cannot rename the default profile")
+        else:
+            self.rename_profile_btn.setToolTip("Rename Profile")
+
+    def closeEvent(self, event):
+        """Handle the window close event, prompting to save if changes were made."""
+        if self.changes_made:
+            profile_display = self.default_profile_display_name if self.current_profile == "Default" else self.current_profile
+            
+            msg_box = QMessageBox(self)
+            msg_box.setIcon(QMessageBox.Icon.Warning)
+            msg_box.setWindowTitle("Unsaved Changes")
+            msg_box.setText(f"You have unsaved changes in the profile '{profile_display}'.")
+            msg_box.setInformativeText("Do you want to save them before closing?")
+            
+            save_button = msg_box.addButton("Save", QMessageBox.ButtonRole.AcceptRole)
+            dont_save_button = msg_box.addButton("Don't Save", QMessageBox.ButtonRole.DestructiveRole)
+            cancel_button = msg_box.addButton("Cancel", QMessageBox.ButtonRole.RejectRole)
+            
+            msg_box.setDefaultButton(cancel_button) # Default to Cancel
+            msg_box.setEscapeButton(cancel_button) # Escape key cancels
+            
+            msg_box.exec()
+            
+            clicked_button = msg_box.clickedButton()
+            
+            if clicked_button == save_button:
+                self.save_config(False)  # Save without confirmation message
+                event.accept()  # Allow closing
+            elif clicked_button == dont_save_button:
+                event.accept()  # Allow closing without saving
+            else: # Cancel button or closing the dialog
+                event.ignore()  # Prevent closing
+        else:
+            event.accept() # No changes, allow closing
     
     def update_profile_combobox(self):
         """Update the profile selection combobox"""
         self.profile_combo.clear()
-        
+    
         # Get sorted profile names, but handle Default specially
         profile_names = sorted(self.profiles.keys())
-        
-        # Add profiles to combo box, with special handling for Default
+    
+        # Add profiles to combo box, with Default handled specially
         for name in profile_names:
+            if not name:  # Skip any empty profile names that might exist
+                continue
+            
             if name == "Default":
+                # Remove the (default) suffix completely
                 self.profile_combo.addItem(self.default_profile_display_name)
             else:
                 self.profile_combo.addItem(name)
-        
+    
         # Set the current profile
         if self.current_profile == "Default":
             self.profile_combo.setCurrentText(self.default_profile_display_name)
         else:
             self.profile_combo.setCurrentText(self.current_profile)
     
+            # Removed duplicate block that set current text again
+    
     def load_profile(self, profile_name):
         """Load a profile by name"""
         # Clear program list
         self.program_list.clear()
         self.programs = []
-    
+        
         # Load profile programs
         if profile_name in self.profiles:
             # Get the program data for this profile
             program_data_list = self.profiles[profile_name]
+            
+            # If the profile is empty or has fewer than 2 entries, ensure exactly 2
+            if len(program_data_list) < 2:
+                # Update the profile data to have exactly 2 entries
+                program_data_list = [{"name": "", "path": ""}, {"name": "", "path": ""}]
+                # Update stored data
+                self.profiles[profile_name] = program_data_list
+            
+            # Now load all program entries synchronously
+            for program_data in program_data_list:
+                program_path = program_data.get("path", "")
+                name = program_data.get("name", "")
+                # Add directly without timer
+                self._add_with_process_check(name, program_path) 
+        else:
+            # If the profile doesn't exist (unlikely), create it with 2 empty entries
+            self.profiles[profile_name] = [{"name": "", "path": ""}, {"name": "", "path": ""}]
+            # Add two empty program entries directly
+            self._add_with_process_check("", "")
+            self._add_with_process_check("", "")
         
-            # If the profile is empty, add one blank entry with delay
-            if not program_data_list:
-                # Use a timer to delay the creation of the first widget
-                QTimer.singleShot(50, lambda: self.add_program(None, None))
-            else:
-                # Process the program data
-                for i, program_data in enumerate(program_data_list):
-                    program_path = program_data.get("path", "")
-                    name = program_data.get("name", "")
-                
-                    # For the first item, use a small delay to ensure styling is applied correctly
-                    if i == 0:
-                        QTimer.singleShot(50, lambda p=program_path, n=name: 
-                            self._add_with_process_check(n, p))
-                    else:
-                        self._add_with_process_check(name, program_path)
-        
-            # Update Close All button state
-            QTimer.singleShot(100, self.update_close_all_button)
+        # Update Close All button state immediately
+        self.update_close_all_button()
+        # Force viewport update after adding items
+        self.program_list.viewport().update() 
     
-    # Helper method to add program and check process status
     def _add_with_process_check(self, name, path):
+        """Add a program and check if it's a running process"""
         program_widget = self.add_program(name, path)
+        
+        # --- Explicitly apply button styles to fix first-row issue ---
+        button_style = """
+            QPushButton {
+                background-color: #772CE8;
+                color: #FFFFFF;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 4px;
+                font-weight: bold;
+                font-size: 10pt;
+            }
+            QPushButton:hover {
+                background-color: #9146FF;
+            }
+            QPushButton:disabled {
+                background-color: #555555;
+                color: #AAAAAA;
+            }
+        """
+        program_widget.browse_btn.setStyleSheet(button_style)
+        program_widget.launch_btn.setStyleSheet(button_style)
+        program_widget.close_btn.setStyleSheet(button_style)
+        # Apply specific style for remove button (includes larger font size)
+        program_widget.remove_btn.setStyleSheet(button_style + "font-size: 14px;") 
+        
+        # --- Explicitly apply QLineEdit styles to fix first-row issue ---
+        line_edit_style = "padding: 2px 8px; color: #FFFFFF; background-color: #2E2E2E; border: 1px solid #444; border-radius: 4px;"
+        program_widget.name_edit.setStyleSheet(line_edit_style)
+        program_widget.path_edit.setStyleSheet(line_edit_style)
+        # --- Explicitly apply status label style to fix first-row issue (borderless) ---
+        program_widget.status_label.setStyleSheet("background-color: #2A2A2A; color: white; border-radius: 4px;")
+        # --- Explicitly apply drag handle style to fix first-row issue (borderless) ---
+        program_widget.drag_handle.setStyleSheet("background-color: #2A2A2A; color: #AAAAAA; font-size: 18px; border-radius: 4px;")
+        # --- End explicit style application ---
+
+        # Force a style update to ensure consistent styling (Keep this as well, might help other elements)
+        item = self.program_list.item(self.program_list.count() - 1) # Get the item just added
+        if item:
+            item.setBackground(QBrush(QColor("#2A2A2A"))) # Explicitly set background
+        if program_widget.style(): # Check if style exists
+            program_widget.style().unpolish(program_widget)
+            program_widget.style().polish(program_widget)
+        program_widget.update() # Request repaint
+
+        QApplication.processEvents() # Process events to help rendering
         
         # Check if this program is in the running processes dictionary
         if path and path in self.running_processes:
@@ -1254,6 +1577,16 @@ class StreamerApp(QMainWindow):
                 "path": widget.get_path()
             })
         
+        # Ensure current_profile exists before saving
+        if self.current_profile not in self.profiles:
+             # If current profile somehow got deleted, default to "Default"
+             # This might happen in edge cases during deletion/switching
+             print(f"Warning: Current profile '{self.current_profile}' not found in profiles dict. Saving to 'Default'.")
+             self.current_profile = "Default"
+             # Ensure Default exists
+             if "Default" not in self.profiles:
+                 self.profiles["Default"] = [] # Create if missing
+
         self.profiles[self.current_profile] = profile_data
         
         config = {
@@ -1280,70 +1613,42 @@ class StreamerApp(QMainWindow):
         config = self.config_manager.load_config()
         
         if config:
-            self.profiles = config.get("profiles", {"Default": [{"name": "", "path": ""}]})
+            self.profiles = config.get("profiles", {"Default": [{"name": "", "path": ""}, {"name": "", "path": ""}]})
             self.current_profile = config.get("current_profile", "Default")
+            # Ensure loaded current_profile actually exists in profiles, else default
+            if self.current_profile not in self.profiles:
+                print(f"Warning: Loaded current_profile '{self.current_profile}' not found. Defaulting to 'Default'.")
+                self.current_profile = "Default"
             self.default_profile_display_name = config.get("default_profile_display_name", "Default")
         else:
-            # Initialize with default profile containing one empty entry
-            self.profiles = {"Default": [{"name": "", "path": ""}]}
+            # Initialize with default profile containing TWO empty entries
+            self.profiles = {"Default": [{"name": "", "path": ""}, {"name": "", "path": ""}]}
             self.default_profile_display_name = "Default"
+            self.current_profile = "Default" # Ensure current is set
             
-        # Ensure Default profile exists
+        # Ensure Default profile exists with correct number of entries
         if "Default" not in self.profiles:
-            self.profiles["Default"] = [{"name": "", "path": ""}]
+            self.profiles["Default"] = [{"name": "", "path": ""}, {"name": "", "path": ""}]
+        elif not self.profiles["Default"]:
+            # If Default exists but is empty, add two entries
+            self.profiles["Default"] = [{"name": "", "path": ""}, {"name": "", "path": ""}]
+        elif len(self.profiles["Default"]) < 2:
+            # If default has fewer than 2 entries, add entries until it has 2
+            while len(self.profiles["Default"]) < 2:
+                self.profiles["Default"].append({"name": "", "path": ""})
             
         # Mark that we're doing initial loading (don't mark changes)
         self.is_initial_loading = True
         
         # Update UI
         self.update_profile_combobox()
-        if self.current_profile == "Default":
-            self.profile_combo.setCurrentText(self.default_profile_display_name)
-        else:
-            self.profile_combo.setCurrentText(self.current_profile)
         
+        # Load the current profile
         self.load_profile(self.current_profile)
         
         # Reset changes flag since we just loaded
         self.changes_made = False
-    
-    def closeEvent(self, event):
-        """Handle window close event"""
-        # Check for running programs
-        running_programs = []
-        for program in self.programs:
-            widget = program["widget"]
-            if hasattr(widget, 'process') and widget.process and widget.process.poll() is None:
-                running_programs.append(widget.get_name() or "Unnamed program")
         
-        # Warn if programs are running
-        if running_programs:
-            result = QMessageBox.question(
-                self,
-                "Programs Still Running",
-                f"The following programs are still running:\n\n{', '.join(running_programs)}\n\nDo you want to exit anyway?",
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                QMessageBox.StandardButton.No
-            )
-            
-            if result != QMessageBox.StandardButton.Yes:
-                event.ignore()
-                return
-        
-        # Check for unsaved changes
-        if self.changes_made:
-            result = QMessageBox.question(
-                self,
-                "Unsaved Changes",
-                f"You have unsaved changes in the profile '{self.current_profile}'. Do you want to save them before closing?",
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel,
-                QMessageBox.StandardButton.Cancel
-            )
-            
-            if result == QMessageBox.StandardButton.Cancel:
-                event.ignore()
-                return
-            elif result == QMessageBox.StandardButton.Yes:
-                self.save_config(False)
-        
-        event.accept()
+        # Force delete and rename button state update
+        self.update_delete_button_state()
+        self.update_rename_button_state() # Add call
