@@ -2,7 +2,8 @@
 
 **A free Windows utility for streamers to launch multiple applications with a single click.**
 
-![image](https://github.com/user-attachments/assets/ea177cdd-3415-4afc-8140-52156587b65d)
+![image](https://github.com/user-attachments/assets/3018908e-4913-4e4f-9b7d-870abaf5f77d)
+
 
 
 
@@ -12,8 +13,9 @@
 - Launch multiple applications with one click
 - Create different profiles for different streaming setups
 - Easy program selection with file browser
+- Optional custom delay between applications
 - Remembers your configuration between sessions
-- Dark theme optimized for streamers
+- Dark theme optimized for streamers, more themes to come.
 
 ## Installation
 
