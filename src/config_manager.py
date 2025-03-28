@@ -21,126 +21,185 @@ import os
 import json
 import sys
 import tkinter.messagebox as messagebox
+from config_models import ProfileConfig, ProgramConfig # Import model classes
+from exceptions import ConfigError # Import custom exception
 
 class ConfigManager:
     """Handles saving and loading of application configuration"""
-    
+
     def __init__(self):
         """Initialize the configuration manager"""
-        self.config_dir = self._get_config_dir()
-        self.config_path = os.path.join(self.config_dir, "ez_streaming_config.json")
-        
-        # Ensure config directory exists
-        os.makedirs(self.config_dir, exist_ok=True)
-    
+        try:
+            self.config_dir = self._get_config_dir()
+            self.config_path = os.path.join(self.config_dir, "ez_streaming_config.json")
+
+            # Ensure config directory exists
+            os.makedirs(self.config_dir, exist_ok=True)
+        except OSError as e:
+            # Handle potential errors during directory creation
+            error_msg = f"Failed to create configuration directory: {self.config_dir}\nError: {e}"
+            print(error_msg)
+            messagebox.showerror("Initialization Error", error_msg)
+            # Depending on severity, might want to exit or use a fallback path
+            raise ConfigError(error_msg) from e # Re-raise as custom exception
+
     def _get_config_dir(self):
         """Get the appropriate configuration directory for the platform"""
-        if sys.platform == "win32":
-            # Windows - always use AppData
-            return os.path.join(os.environ.get("APPDATA", os.path.expanduser("~")), "EZStreaming")
-        elif sys.platform == "darwin":
-            # macOS
-            return os.path.join(os.path.expanduser("~"), "Library", "Application Support", "EZStreaming")
-        else:
-            # Linux/Unix
-            return os.path.join(os.path.expanduser("~"), ".config", "ezstreaming")
-    
+        try:
+            if sys.platform == "win32":
+                # Windows - always use AppData
+                app_data = os.environ.get("APPDATA", None)
+                if not app_data:
+                    raise ConfigError("APPDATA environment variable not found.")
+                return os.path.join(app_data, "EZStreaming")
+            elif sys.platform == "darwin":
+                # macOS
+                home = os.path.expanduser("~")
+                return os.path.join(home, "Library", "Application Support", "EZStreaming")
+            else:
+                # Linux/Unix
+                home = os.path.expanduser("~")
+                return os.path.join(home, ".config", "ezstreaming")
+        except Exception as e:
+            raise ConfigError(f"Could not determine configuration directory: {e}") from e
+
     def save_config(self, config_data):
-        """Save configuration data to file"""
+        """
+        Save configuration data to file.
+        Expects config_data['profiles'] to be a dict of {name: ProfileConfig object}.
+        Raises ConfigError on failure.
+        """
         try:
             print(f"Saving configuration to: {self.config_path}")
+
+            # Prepare data for serialization
+            serializable_config = {
+                "current_profile": config_data.get("current_profile", "Default"),
+                "default_profile_display_name": config_data.get("default_profile_display_name", "Default"),
+                "show_low_delay_warning": config_data.get("show_low_delay_warning", True),
+                "profiles": {}
+            }
+
+            profiles_to_save = config_data.get("profiles", {})
+            for name, profile_obj in profiles_to_save.items():
+                if isinstance(profile_obj, ProfileConfig):
+                    serializable_config["profiles"][name] = profile_obj.to_dict()
+                else:
+                    # Should not happen if app logic is correct, but handle gracefully
+                    print(f"Warning: Profile '{name}' is not a ProfileConfig object during save. Skipping.")
+
+
             with open(self.config_path, "w", encoding="utf-8") as f:
-                json.dump(config_data, f, indent=2)
+                json.dump(serializable_config, f, indent=2)
             print(f"Configuration saved successfully")
             return True
-        except Exception as e:
-            print(f"Error saving configuration: {str(e)}")
-            return False
-    
+        except (IOError, TypeError, json.JSONEncodeError) as e:
+            error_msg = f"Error saving configuration to {self.config_path}: {e}"
+            print(error_msg)
+            # Optionally show messagebox here or let the caller handle ConfigError
+            # messagebox.showerror("Save Error", f"Failed to save configuration:\n{e}")
+            raise ConfigError(error_msg) from e
+        except Exception as e: # Catch any other unexpected errors
+            error_msg = f"Unexpected error saving configuration: {e}"
+            print(error_msg)
+            raise ConfigError(error_msg) from e
+
+
     def load_config(self):
         """
-        Load configuration data from file
-        
+        Load configuration data from file.
+
         Returns:
-            dict: Configuration data, or empty dict if file doesn't exist
+            dict: Configuration data with profiles converted to ProfileConfig objects.
+                  Returns an empty dict with a default profile if file doesn't exist.
+        Raises:
+            ConfigError: If the file exists but cannot be loaded or parsed.
         """
         if not os.path.exists(self.config_path):
-            return {}
-        
+            print("Config file not found. Returning default config structure.")
+            # Return a structure with a default profile object
+            default_profile = ProfileConfig(name="Default")
+            while len(default_profile.programs) < 2:
+                default_profile.programs.append(ProgramConfig())
+            return {
+                "current_profile": "Default",
+                "default_profile_display_name": "Default",
+                "show_low_delay_warning": True,
+                "profiles": {"Default": default_profile}
+            }
+
         try:
             with open(self.config_path, "r", encoding="utf-8") as f:
-                config_data = json.load(f)
+                loaded_data = json.load(f)
 
-            # --- Check if loaded data is a dictionary ---
-            if not isinstance(config_data, dict):
-                print(f"Warning: Configuration file {self.config_path} does not contain a valid JSON object. Using defaults.")
-                return {} # Return empty dict if not a dict
+            # --- Basic validation ---
+            if not isinstance(loaded_data, dict):
+                raise ConfigError(f"Configuration file {self.config_path} does not contain a valid JSON object.")
 
-            # --- Add default values for new keys if missing ---
-            
-            # Global setting
-            if 'show_low_delay_warning' not in config_data:
-                config_data['show_low_delay_warning'] = True
-                
-            # Profile structure validation and migration
-            if 'profiles' in config_data:
-                for profile_name, profile_content in config_data['profiles'].items():
-                    # Ensure profile_content is a dictionary
-                    if not isinstance(profile_content, dict):
-                        # Attempt to migrate from old list format if possible
-                        if isinstance(profile_content, list):
-                            print(f"Migrating profile '{profile_name}' from list to dict format.")
-                            profile_content = {
-                                "launch_delay": 5, # Assign default delay
-                                "programs": profile_content # Keep the existing list
-                            }
-                            config_data['profiles'][profile_name] = profile_content
-                        else:
-                            # Cannot migrate, reset to default structure
-                            print(f"Warning: Profile '{profile_name}' has unexpected format. Resetting.")
-                            profile_content = {"launch_delay": 5, "programs": []}
-                            config_data['profiles'][profile_name] = profile_content
+            # --- Prepare the final config structure ---
+            final_config = {
+                "current_profile": loaded_data.get("current_profile", "Default"),
+                "default_profile_display_name": loaded_data.get("default_profile_display_name", "Default"),
+                "show_low_delay_warning": loaded_data.get("show_low_delay_warning", True),
+                "profiles": {} # This will hold ProfileConfig objects
+            }
 
-                    # Ensure 'launch_delay' exists
-                    if 'launch_delay' not in profile_content:
-                        profile_content['launch_delay'] = 5
+            # --- Load and convert profiles ---
+            loaded_profiles_dict = loaded_data.get("profiles", {})
+            if not isinstance(loaded_profiles_dict, dict):
+                 print(f"Warning: 'profiles' key in config is not a dictionary. Resetting profiles.")
+                 loaded_profiles_dict = {}
 
-                    # Ensure 'programs' list exists
-                    if 'programs' not in profile_content or not isinstance(profile_content['programs'], list):
-                        profile_content['programs'] = []
+            for profile_name, profile_data in loaded_profiles_dict.items():
+                if not isinstance(profile_data, dict):
+                    print(f"Warning: Data for profile '{profile_name}' is not a dictionary. Skipping.")
+                    continue
+                try:
+                    # Use ProfileConfig.from_dict to create the object
+                    # This handles internal structure validation and defaults (like min 2 programs)
+                    profile_obj = ProfileConfig.from_dict(profile_name, profile_data)
+                    final_config["profiles"][profile_name] = profile_obj
+                except Exception as e:
+                    # Catch errors during individual profile processing
+                    print(f"Error processing profile '{profile_name}': {e}. Skipping.")
+                    # Optionally raise ConfigError here if one bad profile should invalidate all
+                    # raise ConfigError(f"Error processing profile '{profile_name}': {e}") from e
 
-                    # Process programs within the profile
-                    programs_list = profile_content['programs']
-                    for program_entry in programs_list:
-                        # Ensure program_entry is a dictionary
-                        if not isinstance(program_entry, dict):
-                            # Skip invalid program entries
-                            print(f"Warning: Invalid program entry found in profile '{profile_name}'. Skipping.")
-                            continue 
+            # --- Ensure Default profile exists ---
+            if "Default" not in final_config["profiles"]:
+                 print("Default profile not found in config, creating one.")
+                 # Create a default ProfileConfig object
+                 default_profile = ProfileConfig(name="Default")
+                 while len(default_profile.programs) < 2:
+                     default_profile.programs.append(ProgramConfig())
+                 final_config["profiles"]["Default"] = default_profile
 
-                        # --- Migrate from 'app_delay' to 'use_custom_delay'/'custom_delay_value' ---
-                        if 'app_delay' in program_entry:
-                            old_delay = program_entry.pop('app_delay') # Remove old key
-                            if old_delay is not None and isinstance(old_delay, int) and old_delay >= 0:
-                                program_entry['use_custom_delay'] = True
-                                program_entry['custom_delay_value'] = old_delay
-                            else: # Includes -1 or invalid types
-                                program_entry['use_custom_delay'] = False
-                                program_entry['custom_delay_value'] = 0
-                        else:
-                            # Set defaults if neither old nor new keys exist
-                            if 'use_custom_delay' not in program_entry:
-                                program_entry['use_custom_delay'] = False
-                            if 'custom_delay_value' not in program_entry:
-                                program_entry['custom_delay_value'] = 0
-                        # --- End Migration ---
 
-            return config_data
-            # --- End of structure validation and migration ---
-            
-        except Exception as e:
-            error_msg = f"Error loading configuration: {str(e)}"
+            # Ensure current_profile actually exists in the loaded profiles
+            if final_config["current_profile"] not in final_config["profiles"]:
+                print(f"Warning: Loaded current_profile '{final_config['current_profile']}' not found. Defaulting to 'Default'.")
+                final_config["current_profile"] = "Default"
+
+
+            print(f"Configuration loaded successfully from {self.config_path}")
+            return final_config
+
+        except json.JSONDecodeError as e:
+            error_msg = f"Error decoding JSON from configuration file: {str(e)}"
             print(error_msg)
-            messagebox.showerror("Configuration Error", 
-                               f"Could not load configuration file.\n\n{error_msg}\n\nDefault settings will be used.")
-            return {}
+            # Show error and raise ConfigError
+            messagebox.showerror("Configuration Error",
+                               f"Could not load configuration file (invalid JSON).\n\n{error_msg}\n\nPlease check or delete the file. Default settings will be used for now.")
+            raise ConfigError(error_msg) from e
+        except (IOError, OSError) as e:
+             error_msg = f"Error reading configuration file {self.config_path}: {e}"
+             print(error_msg)
+             messagebox.showerror("Configuration Error",
+                                f"Could not read configuration file.\n\n{error_msg}\n\nDefault settings will be used for now.")
+             raise ConfigError(error_msg) from e
+        except Exception as e: # Catch any other unexpected errors during loading/processing
+            error_msg = f"Unexpected error loading configuration: {e}"
+            print(error_msg)
+            messagebox.showerror("Configuration Error",
+                               f"Could not load configuration file.\n\n{error_msg}\n\nDefault settings will be used for now.")
+            raise ConfigError(error_msg) from e
