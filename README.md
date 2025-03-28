@@ -2,7 +2,8 @@
 
 **A free Windows utility for streamers to launch multiple applications with a single click.**
 
-![screenshot](https://github.com/user-attachments/assets/709a484c-6a13-4d18-b461-6dcac7697266)
+
+![screenshot](https://github.com/user-attachments/assets/032f046f-ee1d-4bcb-b268-877eeb26250d)
 
 
 
