@@ -2,10 +2,7 @@
 
 **A free Windows utility for streamers to launch multiple applications with a single click.**
 
-
-![screenshot](https://github.com/user-attachments/assets/032f046f-ee1d-4bcb-b268-877eeb26250d)
-
-
+![image](https://github.com/user-attachments/assets/ea177cdd-3415-4afc-8140-52156587b65d)
 
 
 
@@ -15,9 +12,9 @@
 - Launch multiple applications with one click
 - Create different profiles for different streaming setups
 - Easy program selection with file browser
-- Optional custom delay between applications
+- Configurable launch delay between applications (profile default and per-app override)
 - Remembers your configuration between sessions
-- Dark theme optimized for streamers, more themes to come.
+- Dark theme optimized for streamers
 
 ## Installation
 
@@ -44,8 +41,10 @@
 
 1. Add your streaming applications using the "Add Program" button
 2. Navigate to each executable using the "Browse" button
-3. Click "Launch All" to start all programs
-4. Create different profiles for different streaming setups
+3. Optionally, set a default launch delay (in seconds) for the profile using the spinbox at the top right.
+4. Optionally, enable "Custom Delay" for specific apps and set their individual pre-launch delays (0-60 seconds). The first app in the list cannot have a delay.
+5. Click "Launch All" to start all programs sequentially with the configured delays.
+6. Create different profiles for different streaming setups.
 
 ## Building from Source
 
@@ -76,7 +75,7 @@ Under these conditions:
 - State changes you made
 - Include copyright notice (attribution required)
 
-The full license is available in the LICENSE file.
+The full license is available in the `LICENSE` file, and additional attribution notices can be found in the `NOTICE` file.
 
 ## Credits
 
