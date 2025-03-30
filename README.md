@@ -61,21 +61,11 @@ Contributions are welcome! Feel free to submit issues and pull requests.
 
 ## License
 
-EZ Streaming is licensed under the Apache License 2.0.
+EZ Streaming is licensed under the **GNU General Public License v3.0 (GPLv3)**.
 
-This means you can:
-- Use the software commercially
-- Modify the software
-- Distribute the software
-- Use patent claims
-- Place warranty
+This means the software is free to use, modify, and distribute, but under the condition that any derivative works you distribute must also be licensed under the GPLv3. This ensures the software and its derivatives remain free and open source.
 
-Under these conditions:
-- Include the original license
-- State changes you made
-- Include copyright notice (attribution required)
-
-The full license is available in the `LICENSE` file, and additional attribution notices can be found in the `NOTICE` file.
+The full license text is available in the `LICENSE` file.
 
 ## Credits
 
