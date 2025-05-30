@@ -30,8 +30,8 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                               QLineEdit, QListWidget, QListWidgetItem, QFrame,
                               QMessageBox, QFileDialog, QInputDialog, QGraphicsOpacityEffect,
                               QSpinBox, QCheckBox)
-from PySide6.QtCore import Qt, Signal, QSize, QTimer, QPropertyAnimation, QEasingCurve, QRect, QEvent
-from PySide6.QtGui import QIcon, QPixmap, QBrush, QColor, QFont, QFontDatabase
+from PySide6.QtCore import Qt, Signal, QSize, QTimer, QPropertyAnimation, QEasingCurve, QRect, QEvent, QThread
+from PySide6.QtGui import QIcon, QPixmap, QBrush, QColor, QFont, QFontDatabase, QCursor
 
 from config_manager import ConfigManager
 from style_manager import StyleManager # Import StyleManager
@@ -40,6 +40,41 @@ from config_models import ProfileConfig, ProgramConfig # Import model classes
 from launch_sequence import LaunchSequence # Import LaunchSequence
 from exceptions import ProcessError, ConfigError # Import custom exceptions
 from event_bus import UIEventBus, STATUS_UPDATE, PROCESS_LIST_CHANGED, LAUNCH_SEQUENCE_STATE_CHANGED # Import Event Bus
+from app_locator import AppLocator # Import App Locator
+
+
+class AppLocatorWorker(QThread):
+    """Worker thread for locating applications asynchronously"""
+    progress = Signal(str)
+    result = Signal(object)
+    finished = Signal()
+    
+    def __init__(self, app_name: str, parent=None):
+        super().__init__(parent)
+        self.app_name = app_name
+        self.locator = AppLocator()
+    
+    def run(self):
+        """Run the app location search"""
+        try:
+            self.progress.emit(f"Searching for {self.app_name}...")
+            path, display_name, locations_checked = self.locator.locate_app(self.app_name)
+            
+            result_data = {
+                'path': path,
+                'display_name': display_name,
+                'locations_checked': locations_checked,
+                'original_query': self.app_name
+            }
+            self.result.emit(result_data)
+        except Exception as e:
+            self.result.emit({
+                'error': str(e),
+                'original_query': self.app_name
+            })
+        finally:
+            self.finished.emit()
+
 
 class ProgramWidget(QWidget):
     """Widget representing a single program in the list"""
@@ -122,10 +157,24 @@ class ProgramWidget(QWidget):
         self.browse_btn.setFixedWidth(80)
         self.browse_btn.setMinimumHeight(32)
         # Style applied later via _apply_styles_to_widget
+        
+        # Create locate_btn
+        self.locate_btn = QPushButton("Locate")
+        self.locate_btn.setFixedWidth(80)
+        self.locate_btn.setMinimumHeight(32)
+        self.locate_btn.setToolTip("Try to locate app by name")
+        # Style applied later via _apply_styles_to_widget
+        
+        # Create vertical layout for Browse and Locate buttons
+        browse_locate_layout = QVBoxLayout()
+        browse_locate_layout.setSpacing(4)
+        browse_locate_layout.setContentsMargins(0, 0, 0, 0)
+        browse_locate_layout.addWidget(self.browse_btn)
+        browse_locate_layout.addWidget(self.locate_btn)
 
-        # Add Browse button and Path entry to main layout
-        layout.addWidget(self.browse_btn)
-        layout.addWidget(self.path_edit, 3) # Add path entry after browse
+        # Add button layout and Path entry to main layout
+        layout.addLayout(browse_locate_layout)
+        layout.addWidget(self.path_edit, 3) # Add path entry after browse/locate buttons
 
         # --- Custom Delay Checkbox and Spinbox ---
         self.custom_delay_checkbox = QCheckBox("Custom Delay")
@@ -269,6 +318,7 @@ class ProgramWidget(QWidget):
     def connect_signals(self):
         """Connect widget signals to slots"""
         self.browse_btn.clicked.connect(self.browse_for_program)
+        self.locate_btn.clicked.connect(self.locate_app_by_name)
         self.launch_btn.clicked.connect(self.launch_program) # Individual launch remains immediate
         self.remove_btn.clicked.connect(self.remove_program)
         self.close_btn.clicked.connect(self.close_program)
@@ -325,6 +375,177 @@ class ProgramWidget(QWidget):
                 self.name_edit.setText(app_name)
             # Emit data changed signal after path/name update
             self.on_data_changed()
+
+    def locate_app_by_name(self):
+        """Try to locate application by name using common paths and registry"""
+        app_name = self.name_edit.text().strip()
+        
+        # Get references
+        app_window = self.window()
+        if not app_window or not isinstance(app_window, StreamerApp):
+            return
+        
+        event_bus = app_window.event_bus
+        style_manager = app_window.style_manager
+        
+        # Check if name is provided
+        if not app_name:
+            event_bus.publish(STATUS_UPDATE, {
+                "message": "Please enter an app name first",
+                "color": style_manager.warning_color
+            })
+            return
+        
+        # Disable buttons during search
+        self.locate_btn.setEnabled(False)
+        self.locate_btn.setText("Searching...")
+        
+        # Create worker thread
+        self.locate_worker = AppLocatorWorker(app_name)
+        
+        # Connect signals
+        self.locate_worker.progress.connect(self._on_locate_progress)
+        self.locate_worker.result.connect(self._on_locate_result)
+        self.locate_worker.finished.connect(lambda: self._on_locate_complete())
+        
+        # Start search
+        self.locate_worker.start()
+    
+    def _on_locate_progress(self, message: str):
+        """Handle progress updates from locate worker"""
+        app_window = self.window()
+        if app_window and isinstance(app_window, StreamerApp):
+            app_window.event_bus.publish(STATUS_UPDATE, {
+                "message": message,
+                "color": "#FFFFFF"
+            })
+    
+    def _on_locate_result(self, result: dict):
+        """Handle result from locate worker"""
+        app_window = self.window()
+        if not app_window or not isinstance(app_window, StreamerApp):
+            return
+        
+        event_bus = app_window.event_bus
+        style_manager = app_window.style_manager
+        
+        # Check for errors
+        if 'error' in result:
+            event_bus.publish(STATUS_UPDATE, {
+                "message": f"Error searching: {result['error']}",
+                "color": style_manager.error_color
+            })
+            return
+        
+        found_path = result.get('path')
+        display_name = result.get('display_name', result.get('original_query', ''))
+        locations_checked = result.get('locations_checked', [])
+        
+        if found_path:
+            # Success! Update the path
+            self.path_edit.setText(found_path)
+            event_bus.publish(STATUS_UPDATE, {
+                "message": f"Found: {display_name}",
+                "color": style_manager.success_color
+            })
+            # Auto-populate name with the proper display name
+            if self.name_edit.text().lower() != display_name.lower():
+                # Extract just the app name without "Studio" or other suffixes for cleaner display
+                clean_name = display_name.replace(' Studio', '').replace(' Desktop', '')
+                self.name_edit.setText(clean_name)
+            self.on_data_changed()
+        else:
+            # Not found - show detailed feedback
+            app_name = result.get('original_query', self.name_edit.text())
+            
+            # Show the popup
+            self._show_locate_popup(result)
+            
+            # Update status bar
+            event_bus.publish(STATUS_UPDATE, {
+                "message": f"'{app_name}' not found",
+                "color": style_manager.warning_color
+            })
+    
+    def _on_locate_complete(self):
+        """Re-enable locate button when search completes"""
+        self.locate_btn.setEnabled(True)
+        self.locate_btn.setText("Locate")
+    
+    def _show_locate_popup(self, result):
+        """Show the 'Not Located' popup with available apps"""
+        app_window = self.window()
+        if not app_window or not isinstance(app_window, StreamerApp):
+            return
+        
+        app_name = result.get('original_query', self.name_edit.text())
+        locations_checked = result.get('locations_checked', [])
+        
+        # Build the message
+        if isinstance(locations_checked, list) and len(locations_checked) > 0:
+            # Filter for apps similar to what the user typed
+            similar_apps = []
+            search_lower = app_name.lower()
+            for app in locations_checked:
+                app_lower = app.lower()
+                # Check if there's any similarity
+                if (any(word in app_lower for word in search_lower.split() if len(word) > 2) or
+                    any(word in search_lower for word in app_lower.split() if len(word) > 2)):
+                    similar_apps.append(app)
+            
+            if similar_apps:
+                message = "Similar apps found:\n\n"
+                for app in similar_apps[:8]:
+                    message += f"• {app}\n"
+                if len(similar_apps) > 8:
+                    message += f"\n...and {len(similar_apps) - 8} more"
+            else:
+                message = "No similar apps found."
+            
+            message += "\n\nIs the application installed? If yes, try:"
+            message += "\n• Checking the spelling"
+            message += "\n• Using the Browse button to manually locate the .exe file"
+        else:
+            message = "Unable to determine similar apps.\n\nPlease use the Browse button to manually locate the .exe file."
+        
+        # Show simple message box
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle("Not Located")
+        msg_box.setIcon(QMessageBox.Icon.Information)
+        msg_box.setText(f"Could not locate '{app_name}'")
+        msg_box.setInformativeText(message)
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+        
+        # Apply basic dark styling if possible
+        try:
+            if hasattr(app_window, 'style_manager') and hasattr(app_window.style_manager, 'get_dialog_style'):
+                msg_box.setStyleSheet(app_window.style_manager.get_dialog_style())
+            else:
+                # Basic dark theme styling
+                msg_box.setStyleSheet("""
+                    QMessageBox {
+                        background-color: #2b2b2b;
+                        color: #ffffff;
+                    }
+                    QMessageBox QLabel {
+                        color: #ffffff;
+                    }
+                    QMessageBox QPushButton {
+                        background-color: #9146ff;
+                        color: white;
+                        border: none;
+                        padding: 5px 15px;
+                        border-radius: 4px;
+                        font-weight: bold;
+                    }
+                    QMessageBox QPushButton:hover {
+                        background-color: #7d3fc8;
+                    }
+                """)
+        except Exception:
+            pass  # Use default styling if anything fails
+        
+        msg_box.exec()
 
 
     def launch_program(self):
@@ -1169,6 +1390,7 @@ class StreamerApp(QMainWindow):
         # Apply styles explicitly using StyleManager methods
         button_style = self.style_manager.get_button_style()
         program_widget.browse_btn.setStyleSheet(button_style)
+        program_widget.locate_btn.setStyleSheet(button_style)
         program_widget.launch_btn.setStyleSheet(button_style)
         program_widget.close_btn.setStyleSheet(button_style)
         program_widget.remove_btn.setStyleSheet(self.style_manager.get_button_style("font-size: 14px;")) # Add specific font size
