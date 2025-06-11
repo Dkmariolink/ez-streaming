@@ -149,7 +149,6 @@ Thumbs.db
 ez_streaming_config.json
 
 # Development documentation (not for public repository)
-.clinerules
 memory-bank/
 handover-document.md
 roadmap-document.md
