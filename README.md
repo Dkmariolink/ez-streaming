@@ -2,7 +2,8 @@
 
 **A powerful Windows utility for content creators to launch multiple streaming applications with a single click.** 🚀
 
-![EZ Streaming Interface](https://github.com/user-attachments/assets/ea177cdd-3415-4afc-8140-521565867b65d)
+![image](https://github.com/user-attachments/assets/476445d6-cf4d-40ac-b9cc-1ccc8e58b2d3)
+
 
 ## ✨ Features
 
