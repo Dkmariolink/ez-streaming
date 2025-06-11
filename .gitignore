@@ -147,3 +147,13 @@ Thumbs.db
 
 # EZ Streaming specific
 ez_streaming_config.json
+
+# Development documentation (not for public repository)
+.clinerules
+memory-bank/
+handover-document.md
+roadmap-document.md
+short-story.md
+fresh_env.txt
+build.spec
+EZStreaming.spec
