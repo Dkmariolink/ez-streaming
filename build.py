@@ -10,12 +10,17 @@ def build_executable():
     if not os.path.exists('dist'):
         os.makedirs('dist')
     
+    # Determine the correct path separator for --add-data
+    # For PyInstaller, on Windows it's ';', on other OS it's ':'
+    data_separator = ';' if sys.platform.startswith('win') else ':'
+    
     # Run PyInstaller
     subprocess.run([
         'pyinstaller',
         '--onefile',
         '--windowed',
         '--icon=assets/icon.ico',
+        f'--add-data=assets{data_separator}assets', # Added for bundling assets
         '--name=EZStreaming',
         'src/main.py'
     ])
