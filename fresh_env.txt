@@ -1,8 +1,0 @@
-# Create a new virtual environment
-python -m venv fresh_env
-# Activate it
-fresh_env\Scripts\activate
-# Install required packages
-pip install pyside6 pyinstaller psutil
-# Optional: For GPU monitoring support
-# pip install gputil py3nvml

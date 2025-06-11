@@ -1,29 +1,29 @@
-# EZ Streaming 🚀
+# EZ Streaming
 
 **A powerful Windows utility for content creators to launch multiple streaming applications with a single click.**
 
 ![EZ Streaming Interface](https://github.com/user-attachments/assets/ea177cdd-3415-4afc-8140-52156587b65d)
 
-## ✨ Features
+## Features
 
-- **🎯 One-Click Launch** - Start all your streaming applications sequentially with a single click
-- **📋 Multiple Profiles** - Create different setups for gaming, art streams, podcasts, or any content type
-- **🕐 Smart Launch Delays** - Configurable delays between app launches to prevent system overload
-- **🔍 Intelligent App Finder** - Built-in locator for 24+ popular streaming applications
-- **⚡ Fast Process Management** - Monitor and control launched applications
-- **🎨 Modern Interface** - Sleek dark theme optimized for content creators
-- **💾 Persistent Configuration** - Your setups are automatically saved and restored
-- **🔧 Flexible Ordering** - Drag-and-drop to arrange your launch sequence
-- **🖥️ Windows Optimized** - Native Windows integration with startup options
+- **One-Click Launch** - Start all your streaming applications sequentially with a single click
+- **Multiple Profiles** - Create different setups for gaming, art streams, podcasts, or any content type
+- **Smart Launch Delays** - Configurable delays between app launches to prevent system overload
+- **Intelligent App Finder** - Built-in search logic for popular streaming applications
+- **Fast Process Management** - Monitor and control launched applications
+- **Modern Interface** - Sleek dark theme optimized for content creators
+- **Persistent Configuration** - Your setups are automatically saved and restored
+- **Flexible Ordering** - Drag-and-drop to arrange your launch sequence
+- **Windows Optimized** - Native Windows integration with startup options
 
-## 🎯 Perfect For
+## Perfect For
 
 - **Streamers** - Twitch, YouTube, Facebook Gaming creators
 - **Content Creators** - Podcasters, educators, artists
 - **Gamers** - Competitive players with complex setups
 - **Professionals** - Anyone who needs to launch multiple applications regularly
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Windows Installation
 
@@ -33,9 +33,11 @@
 4. **Create your first profile** and add your streaming apps
 5. **Click "Launch All"** and start creating!
 
-### Supported Applications
+### Application Support
 
-EZ Streaming includes built-in support for 24+ popular streaming applications:
+**EZ Streaming works with any Windows executable (.exe) file.**
+
+The "Locate App by Name" feature includes built-in search logic for these popular streaming applications:
 
 **Streaming Software:**
 - OBS Studio, Streamlabs, XSplit, Twitch Studio
@@ -61,16 +63,16 @@ EZ Streaming includes built-in support for 24+ popular streaming applications:
 **Interactive Features:**
 - Crowd Control, Dixper
 
-*Can't find your app? Use the "Locate App by Name" feature or browse for any executable!*
+Note: These are applications with built-in search logic for the "Locate App by Name" feature. You can add any Windows executable using the "Browse" button or by dragging files directly into the interface.
 
-## 📖 Usage Guide
+## Usage Guide
 
 ### Creating Your First Profile
 
 1. **Launch EZ Streaming** and you'll see the default profile
 2. **Add your applications** using one of these methods:
-   - Click "Locate App by Name" for automatic detection
-   - Use "Browse" to manually select executable files
+   - Click "Locate App by Name" for automatic detection of supported apps
+   - Use "Browse" to manually select any executable files
    - Drag applications directly into the interface
 3. **Set launch delays** if needed (recommended 2-5 seconds between apps)
 4. **Arrange the order** by dragging rows up or down
@@ -95,7 +97,7 @@ EZ Streaming includes built-in support for 24+ popular streaming applications:
 - **Bulk operations** - close all apps in a profile
 - **External detection** - shows if apps are already running
 
-## 🛠️ Development
+## Development
 
 ### Prerequisites
 - **Python 3.8+** with pip
@@ -117,7 +119,7 @@ EZ Streaming includes built-in support for 24+ popular streaming applications:
 
 3. **Install dependencies:**
    ```bash
-   pip install -r fresh_env.txt
+   pip install -r requirements.txt
    ```
 
 4. **Run from source:**
@@ -139,7 +141,6 @@ ez-streaming/
 │   └── ...              # Additional modules
 ├── assets/              # Icons and resources
 ├── docs/                # GitHub Pages documentation
-├── memory-bank/         # Development documentation
 └── build.py            # Build configuration
 ```
 
@@ -155,17 +156,17 @@ python build.py
 
 The built executable will be in the `dist/` directory.
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions from developers, designers, and users! Here's how you can help:
 
 ### Types of Contributions
 
-- **🐛 Bug Reports** - Help us fix issues and improve stability
-- **💡 Feature Requests** - Suggest new functionality for streamers
-- **📝 Documentation** - Improve guides and help content
-- **💻 Code** - Implement features, fix bugs, optimize performance
-- **🎨 Design** - UI/UX improvements and visual enhancements
+- **Bug Reports** - Help us fix issues and improve stability
+- **Feature Requests** - Suggest new functionality for streamers
+- **Documentation** - Improve guides and help content
+- **Code** - Implement features, fix bugs, optimize performance
+- **Design** - UI/UX improvements and visual enhancements
 
 ### Development Process
 
@@ -187,19 +188,18 @@ We welcome contributions from developers, designers, and users! Here's how you c
 
 See our full [Contributing Guide](CONTRIBUTING.md) for detailed information.
 
-## 🔐 Privacy & Security
+## Privacy & Security
 
-EZ Streaming is built with privacy in mind:
+EZ Streaming is built with privacy in mind. For complete details about our privacy practices, data handling, and security measures, please see our [Privacy Policy](PRIVACY.md).
 
-- **No data collection** - We never collect or transmit your information
-- **Local storage only** - All data stays on your device
-- **No telemetry** - No usage tracking or analytics
-- **Open source** - Full transparency in our codebase
-- **Minimal permissions** - Only requests necessary system access
+**Quick Overview:**
+- No data collection or transmission
+- All data stays on your device
+- No telemetry or usage tracking
+- Open source transparency
+- Minimal system permissions
 
-Your streaming setup remains private and under your control.
-
-## 🗺️ Roadmap
+## Roadmap
 
 ### Phase 2: User Experience Enhancement (In Progress)
 - **Profile Import/Export** - Share setups with other creators
@@ -221,7 +221,7 @@ Your streaming setup remains private and under your control.
 - **Community features** - Profile sharing platform
 - **Advanced automation** - Conditional and dependency-based launching
 
-## 📊 System Requirements
+## System Requirements
 
 ### Minimum Requirements
 - **OS**: Windows 10 (64-bit)
@@ -235,19 +235,19 @@ Your streaming setup remains private and under your control.
 - **Storage**: 500 MB free space
 - **Display**: 1920x1080 or higher
 
-## 📝 License
+## License
 
 EZ Streaming is licensed under the **GNU General Public License v3.0 (GPLv3)**.
 
 This ensures the software remains free and open source forever. You can:
-- ✅ Use the software for any purpose
-- ✅ Study and modify the source code
-- ✅ Distribute copies to help others
-- ✅ Distribute your modifications
+- Use the software for any purpose
+- Study and modify the source code
+- Distribute copies to help others
+- Distribute your modifications
 
 All derivative works must also be licensed under GPLv3. See [LICENSE](LICENSE) for full details.
 
-## 🏆 Acknowledgments
+## Acknowledgments
 
 - **PySide6/Qt** - For the excellent GUI framework
 - **PyInstaller** - For seamless executable packaging
@@ -255,17 +255,17 @@ All derivative works must also be licensed under GPLv3. See [LICENSE](LICENSE) f
 - **Content creators** - For inspiration and feedback
 - **Open source contributors** - Making this project better
 
-## ☕ Support the Project
+## Support the Project
 
 If EZ Streaming helps your content creation workflow:
 
-- ⭐ **Star this repository** to show your support
-- 🐛 **Report bugs** and suggest improvements
-- 📢 **Share with other creators** who might benefit
-- 💰 **Buy me a coffee** at [Buy Me a Coffee](https://www.buymeacoffee.com/dkmariolink)
-- 🤝 **Contribute code** to help the project grow
+- Star this repository to show your support
+- Report bugs and suggest improvements
+- Share with other creators who might benefit
+- Buy me a coffee at [Buy Me a Coffee](https://www.buymeacoffee.com/dkmariolink)
+- Contribute code to help the project grow
 
-## 📧 Contact & Support
+## Contact & Support
 
 ### Get Help
 - **Issues**: [GitHub Issues](https://github.com/Dkmariolink/ez-streaming/issues)
@@ -285,4 +285,4 @@ Join our growing community of content creators using EZ Streaming! Share your se
 
 **Ready to streamline your streaming setup?** [Download EZ Streaming](https://github.com/Dkmariolink/ez-streaming/releases) and transform your content creation workflow today!
 
-*Made with 💜 by [Dkmariolink](https://github.com/Dkmariolink) - Empowering content creators worldwide*
+*Made with care by [Dkmariolink](https://github.com/Dkmariolink) - Empowering content creators worldwide*
