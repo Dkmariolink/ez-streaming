@@ -21,59 +21,220 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EZ Streaming - Simple Streaming App Launcher</title>
+    <title>EZ Streaming - One-Click Streaming App Launcher for Windows</title>
+    <meta name="description" content="Launch all your streaming applications with a single click. Perfect for streamers, content creators, and gamers. Free and open source.">
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/png" href="images/icon.png"> <!-- Keep favicon as icon.png -->
+    <link rel="icon" type="image/png" href="images/icon.png">
 </head>
 <body>
     <header>
         <div class="logo">
-            <img src="images/title.png" alt="EZ Streaming Logo"> <!-- Change logo to title.png -->
+            <img src="images/title.png" alt="EZ Streaming Logo">
         </div>
         <nav>
             <ul>
-                <li><a href="index.html">Home</a></li>
+                <li><a href="#features">Features</a></li>
                 <li><a href="download.html">Download</a></li>
+                <li><a href="support.html">Support</a></li>
                 <li><a href="https://github.com/Dkmariolink/ez-streaming">GitHub</a></li>
+                <li><a href="https://github.com/Dkmariolink/ez-streaming/wiki">Docs</a></li>
             </ul>
         </nav>
     </header>
     
     <section class="hero">
         <div class="hero-content">
-            <h2>Streamline Your Streaming Setup</h2>
-            <p>Launch all your streaming apps with a single click!</p>
-            <a href="download.html" class="cta-button">Download Now</a>
+            <h1>Streamline Your Streaming Setup 🚀</h1>
+            <p class="hero-subtitle">Launch all your streaming applications with a single click. Perfect for streamers, content creators, and gamers who want to get live faster.</p>
+            <div class="hero-buttons">
+                <a href="download.html" class="cta-button primary">Download Free</a>
+                <a href="https://github.com/Dkmariolink/ez-streaming" class="cta-button secondary">View on GitHub</a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-number">100+</span>
+                    <span class="stat-label">Supported Apps</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">100%</span>
+                    <span class="stat-label">Free & Open Source</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">Windows</span>
+                    <span class="stat-label">Native Support</span>
+                </div>
+            </div>
         </div>
         <div class="hero-image">
-            <img src="images/screenshot.png" alt="EZ Streaming Screenshot">
+            <img src="images/screenshot.png" alt="EZ Streaming Interface Screenshot">
         </div>
     </section>
     
-    <section class="features">
-        <h2>Features</h2>
-        <div class="feature-grid">
-            <div class="feature">
-                <h3>One-Click Launch</h3>
-                <p>Start all your streaming applications with a single click</p>
+    <section class="features" id="features">
+        <div class="container">
+            <h2>✨ Powerful Features for Content Creators</h2>
+            <div class="feature-grid">
+                <div class="feature">
+                    <div class="feature-icon">🎯</div>
+                    <h3>One-Click Launch</h3>
+                    <p>Start all your streaming applications sequentially with a single click. No more manually opening OBS, Discord, Spotify, and everything else.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📋</div>
+                    <h3>Multiple Profiles</h3>
+                    <p>Create different setups for gaming streams, art streams, podcasts, or any content type. Switch between profiles instantly.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Smart App Finder</h3>
+                    <p>Built-in search logic for 24+ popular streaming applications including OBS, Discord, Spotify, VTube Studio, and more.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">⏱️</div>
+                    <h3>Launch Delays</h3>
+                    <p>Configurable delays between app launches to prevent system overload. Set custom delays for heavy applications.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📊</div>
+                    <h3>Process Management</h3>
+                    <p>Monitor and control launched applications. See what's running, launch individual apps, or close everything at once.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Modern Interface</h3>
+                    <p>Sleek dark theme optimized for content creators. Drag-and-drop ordering, tooltips, and intuitive controls.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">💾</div>
+                    <h3>Auto-Save</h3>
+                    <p>Your configurations are automatically saved and restored. Never lose your carefully crafted streaming setup.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🛠️</div>
+                    <h3>Universal Support</h3>
+                    <p>Works with any Windows executable. While we have smart detection for popular apps, you can add anything.</p>
+                </div>
             </div>
-            <div class="feature">
-                <h3>Multiple Profiles</h3>
-                <p>Create different profiles for different streaming setups</p>
+        </div>
+    </section>
+
+    <section class="use-cases">
+        <div class="container">
+            <h2>🎬 Perfect For Every Creator</h2>
+            <div class="use-case-grid">
+                <div class="use-case">
+                    <h3>🎮 Streamers</h3>
+                    <p>Twitch, YouTube, and Facebook Gaming creators who need OBS, chat tools, alerts, and game capture ready instantly.</p>
+                </div>
+                <div class="use-case">
+                    <h3>🎨 Artists</h3>
+                    <p>Digital artists who stream their creative process with drawing software, reference browsers, and music apps.</p>
+                </div>
+                <div class="use-case">
+                    <h3>🎙️ Podcasters</h3>
+                    <p>Audio creators who need recording software, communication tools, and note-taking apps for smooth shows.</p>
+                </div>
+                <div class="use-case">
+                    <h3>💼 Professionals</h3>
+                    <p>Anyone who regularly launches the same set of applications for work, meetings, or content creation.</p>
+                </div>
             </div>
-            <div class="feature">
-                <h3>Custom Configuration</h3>
-                <p>Easy to add, remove, and manage your streaming applications</p>
+        </div>
+    </section>
+
+    <section class="supported-apps">
+        <div class="container">
+            <h2>📱 Works With Your Favorite Apps</h2>
+            <p class="section-subtitle">Built-in smart detection for these popular applications, plus support for any Windows executable:</p>
+            <div class="app-categories">
+                <div class="app-category">
+                    <h4>Streaming Software</h4>
+                    <div class="app-list">OBS Studio • Streamlabs • XSplit • Twitch Studio • StreamElements</div>
+                </div>
+                <div class="app-category">
+                    <h4>Communication</h4>
+                    <div class="app-list">Discord • TeamSpeak • Skype</div>
+                </div>
+                <div class="app-category">
+                    <h4>Content & Music</h4>
+                    <div class="app-list">Spotify • VLC Media Player • Audacity</div>
+                </div>
+                <div class="app-category">
+                    <h4>Stream Enhancement</h4>
+                    <div class="app-list">Mix It Up • Touch Portal • Stream Deck</div>
+                </div>
+                <div class="app-category">
+                    <h4>Virtual Production</h4>
+                    <div class="app-list">VTube Studio • NVIDIA Broadcast • Snap Camera</div>
+                </div>
             </div>
-            <div class="feature">
-                <h3>Open source</h3>
-                <p>Free to use, modify, and share</p>
+            <p class="app-note">💡 Don't see your app? No problem! Use the browse button to add any Windows executable.</p>
+        </div>
+    </section>
+
+    <section class="getting-started">
+        <div class="container">
+            <h2>🚀 Get Started in Minutes</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Download & Launch</h3>
+                    <p>Download EZ Streaming and run the executable. No installation required!</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Add Your Apps</h3>
+                    <p>Use "Locate App by Name" for automatic detection or browse to any executable file.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Configure & Launch</h3>
+                    <p>Set launch delays, arrange order by dragging, then click "Launch All" to go live!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <div class="container">
+            <h2>Ready to Transform Your Streaming Workflow? 📺</h2>
+            <p>Join streamers who have simplified their setup with EZ Streaming.</p>
+            <div class="cta-buttons">
+                <a href="download.html" class="cta-button primary">Download Free Now</a>
+                <a href="https://github.com/Dkmariolink/ez-streaming/wiki" class="cta-button secondary">Read Documentation</a>
             </div>
         </div>
     </section>
     
     <footer>
-        <p>&copy; 2025 EZ Streaming | <a href="https://github.com/YourUsername/ez-streaming">GitHub</a></p>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>EZ Streaming</h4>
+                    <p>Simplifying streaming setups for content creators worldwide.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Links</h4>
+                    <ul>
+                        <li><a href="download.html">Download</a></li>
+                        <li><a href="https://github.com/Dkmariolink/ez-streaming">GitHub</a></li>
+                        <li><a href="https://github.com/Dkmariolink/ez-streaming/wiki">Documentation</a></li>
+                        <li><a href="https://github.com/Dkmariolink/ez-streaming/issues">Support</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Developer</h4>
+                    <ul>
+                        <li><a href="https://github.com/Dkmariolink">@Dkmariolink</a></li>
+                        <li><a href="https://x.com/TheDkmariolink">Twitter</a></li>
+                        <li><a href="mailto:TheDkmariolink@gmail.com">Email</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 EZ Streaming | Licensed under GPLv3 | Made with ❤️ for content creators</p>
+            </div>
+        </div>
     </footer>
 </body>
 </html>

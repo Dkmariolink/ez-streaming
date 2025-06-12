@@ -63,7 +63,7 @@ The "Locate App by Name" feature includes built-in search logic for these popula
 **Interactive Features:**
 - Crowd Control, Dixper
 
-**Pro Tip:** These are applications with built-in search logic for the "Locate App by Name" feature. You can add any Windows executable using the "Browse" button or by dragging files directly into the interface! 
+**Pro Tip:** These are applications with built-in search logic for the "Locate App by Name" feature. You can add any Windows executable using the "Browse" button or by dragging files directly into the interface!
 Most exe's can also be found by the locate app by name feature as it uses smart detection, give it a shot!
 
 ## 📚 Usage Guide
