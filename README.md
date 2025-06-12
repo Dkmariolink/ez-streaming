@@ -2,7 +2,7 @@
 
 **A powerful Windows utility for content creators to launch multiple streaming applications with a single click.**
 
-![EZ Streaming Interface](https://github.com/user-attachments/assets/ea177cdd-3415-4afc-8140-521565867b65d)
+![image](https://github.com/user-attachments/assets/476445d6-cf4d-40ac-b9cc-1ccc8e58b2d3)
 
 ## ✨ Features
 
@@ -16,7 +16,7 @@
 - **Flexible Ordering** - Drag-and-drop to arrange your launch sequence
 - **Windows Optimized** - Native Windows integration with startup options
 
-## 🎭 Perfect For
+## Perfect For
 
 - **Streamers** - Twitch, YouTube, Facebook Gaming creators
 - **Content Creators** - Podcasters, educators, artists
@@ -25,7 +25,7 @@
 
 ## 🚀 Quick Start
 
-### 🪟 Windows Installation
+### Windows Installation
 
 1. **Download the latest release** from the [Releases page](https://github.com/Dkmariolink/ez-streaming/releases)
 2. **Extract the ZIP file** to your preferred location
@@ -33,7 +33,7 @@
 4. **Create your first profile** and add your streaming apps
 5. **Click "Launch All"** and start creating!
 
-### 🔧 Application Support
+### Application Support
 
 **EZ Streaming works with any Windows executable (.exe) file.** 
 
@@ -63,11 +63,11 @@ The "Locate App by Name" feature includes built-in search logic for these popula
 **Interactive Features:**
 - Crowd Control, Dixper
 
-**Pro Tip:** These are applications with built-in search logic for the "Locate App by Name" feature. You can add any Windows executable using the "Browse" button or by dragging files directly into the interface!
+**Pro Tip:** These are applications with built-in search logic for the "Locate App by Name" feature. You can add any Windows executable using the "Browse" button or by dragging files directly into the interface! Most exe's can also be found by the locate app by name feature as it uses smart detection, give it a shot!
 
 ## 📚 Usage Guide
 
-### 🎯 Creating Your First Profile
+### Creating Your First Profile
 
 1. **Launch EZ Streaming** and you'll see the default profile
 2. **Add your applications** using one of these methods:
@@ -78,26 +78,26 @@ The "Locate App by Name" feature includes built-in search logic for these popula
 4. **Arrange the order** by dragging rows up or down
 5. **Save your profile** - changes are automatically persisted
 
-### 🔧 Advanced Features
+### Advanced Features
 
-#### ⏱️ Launch Delays
+#### Launch Delays
 - **Profile Default Delay**: Set a standard delay for all apps in the profile
 - **Per-App Custom Delay**: Override the default for specific applications
 - **Smart Validation**: The first app in your sequence launches immediately
 
-#### 📁 Multiple Profiles
+#### Multiple Profiles
 - **Create profiles** for different content types (Gaming, Art, Podcast)
 - **Duplicate profiles** as templates for similar setups
 - **Quick switching** between profiles via dropdown
 - **Protected Default**: The default profile cannot be accidentally renamed
 
-#### 📊 Process Management
+#### Process Management
 - **Monitor status** of launched applications in real-time
 - **Individual control** - launch or close specific apps
 - **Bulk operations** - close all apps in a profile
 - **External detection** - shows if apps are already running
 
-#### 🔍 Smart App Discovery
+#### Smart App Discovery
 - **24+ supported apps** with intelligent search
 - **Steam integration** - finds games in steamapps/common directories
 - **Registry search** - locates apps using Windows registry (read-only)
@@ -106,12 +106,12 @@ The "Locate App by Name" feature includes built-in search logic for these popula
 
 ## 💻 Development
 
-### 📋 Prerequisites
+### Prerequisites
 - **Python 3.8+** with pip
 - **Windows 10/11** (primary platform)
 - **Git** for version control
 
-### 🛠️ Development Setup
+### Development Setup
 
 1. **Clone the repository:**
    ```bash
@@ -134,7 +134,7 @@ The "Locate App by Name" feature includes built-in search logic for these popula
    python src/main.py
    ```
 
-### 📁 Project Structure
+### Project Structure
 ```
 ez-streaming/
 ├── src/                                    # Source code
@@ -151,7 +151,7 @@ ez-streaming/
 └── build.py                               # Build configuration
 ```
 
-### 🏗️ Building from Source
+### Building from Source
 
 ```bash
 # Install PyInstaller
@@ -167,7 +167,7 @@ The built executable will be in the `dist/` directory.
 
 We welcome contributions from developers, designers, and users! Here's how you can help:
 
-### 🎯 Types of Contributions
+### Types of Contributions
 
 - **Bug Reports** - Help us fix issues and improve stability
 - **Feature Requests** - Suggest new functionality for streamers
@@ -175,7 +175,7 @@ We welcome contributions from developers, designers, and users! Here's how you c
 - **Code** - Implement features, fix bugs, optimize performance
 - **Design** - UI/UX improvements and visual enhancements
 
-### 🔄 Development Process
+### Development Process
 
 1. **Fork** the repository
 2. **Create a feature branch** from `development`
@@ -187,7 +187,7 @@ We welcome contributions from developers, designers, and users! Here's how you c
 4. **Test thoroughly** with multiple streaming setups
 5. **Submit a pull request** with detailed description
 
-### 📝 Coding Guidelines
+### Coding Guidelines
 - **Python**: Follow PEP 8, use type hints where helpful
 - **Qt/PySide6**: Maintain consistent styling and responsive UI
 - **Architecture**: Leverage the existing manager pattern
@@ -208,21 +208,21 @@ EZ Streaming is built with privacy in mind. For complete details about data hand
 
 ## 🗺️ Roadmap
 
-### 📈 Phase 2: User Experience Enhancement (In Progress)
+### Phase 2: User Experience Enhancement (In Progress)
 - **Profile Import/Export** - Share setups with other creators
 - **Auto-save functionality** - Never lose your configurations
 - **Windows startup integration** - Launch with your system
 - **Command-line arguments** - Advanced application control
 - **Enhanced app discovery** - Even smarter application finding
 
-### 🔮 Phase 3: Advanced Integration (Planned)
+### Phase 3: Advanced Integration (Planned)
 - **System tray functionality** - Minimize to tray
 - **Stream status monitoring** - Integration with Twitch/YouTube APIs
 - **Notification system** - Alerts for launch events
 - **Performance monitoring** - Track resource usage
 - **Auto-update system** - Seamless updates
 
-### 🌟 Phase 4: Extended Functionality (Future)
+### Phase 4: Extended Functionality (Future)
 - **macOS/Linux support** - Cross-platform availability
 - **Mobile companion app** - Remote control capabilities
 - **Community features** - Profile sharing platform
@@ -230,13 +230,13 @@ EZ Streaming is built with privacy in mind. For complete details about data hand
 
 ## 💻 System Requirements
 
-### 📋 Minimum Requirements
+### Minimum Requirements
 - **OS**: Windows 10 (64-bit)
 - **RAM**: 4 GB
 - **Storage**: 100 MB free space
 - **Network**: None required (works offline)
 
-### ✨ Recommended
+### Recommended
 - **OS**: Windows 11 (64-bit)
 - **RAM**: 8 GB or more
 - **Storage**: 500 MB free space
@@ -274,12 +274,12 @@ If EZ Streaming helps your content creation workflow:
 
 ## 📞 Contact & Support
 
-### 🆘 Get Help
+### Get Help
 - **Issues**: [GitHub Issues](https://github.com/Dkmariolink/ez-streaming/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/Dkmariolink/ez-streaming/discussions)
 - **Documentation**: [Project Wiki](https://github.com/Dkmariolink/ez-streaming/wiki)
 
-### 🤝 Connect with the Developer
+### Connect with the Developer
 - **GitHub**: [@Dkmariolink](https://github.com/Dkmariolink)
 - **Twitter**: [@TheDkmariolink](https://x.com/TheDkmariolink)
 - **Discord**: Dkmariolink
