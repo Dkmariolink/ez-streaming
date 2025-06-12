@@ -434,46 +434,491 @@ footer {
     color: #aaa;
 }
 
-/* Download page specific */
-.download-section {
-    max-width: 800px;
-    margin: 3rem auto;
-    padding: 3rem;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-}
-
-.download-button {
-    display: inline-block;
+/* Download page specific - MODERN VERSION */
+.download-hero {
     background: linear-gradient(135deg, #9146FF 0%, #772CE8 100%);
     color: white;
-    padding: 16px 32px;
-    border-radius: 8px;
-    text-decoration: none;
+    padding: 6rem 2rem 4rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.download-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><defs><radialGradient id="a" cx="50%" cy="0%" r="100%"><stop offset="0%" style="stop-color:rgba(255,255,255,0.1);stop-opacity:1" /><stop offset="100%" style="stop-color:rgba(255,255,255,0);stop-opacity:0" /></radialGradient></defs><ellipse fill="url(%23a)" cx="50" cy="0" rx="50" ry="20"/></svg>') no-repeat center top;
+    opacity: 0.3;
+}
+
+.download-hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.download-hero h1 {
+    font-size: 3.5rem;
+    margin-bottom: 1.5rem;
+    color: white;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.download-hero-subtitle {
+    font-size: 1.3rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.version-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.version-label {
+    font-weight: 500;
+}
+
+.version-number {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
     font-weight: bold;
-    margin-top: 1rem;
-    font-size: 1.2rem;
+    font-size: 0.9rem;
+}
+
+.version-platform {
+    background: linear-gradient(135deg, #00D4FF, #5A67D8);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.download-main {
+    padding: 4rem 2rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.download-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.download-card {
+    background: white;
+    border-radius: 16px;
+    padding: 3rem 2rem;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
+    border: 1px solid rgba(145, 70, 255, 0.1);
+}
+
+.download-card.featured {
+    background: linear-gradient(135deg, #9146FF 0%, #772CE8 100%);
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 12px 48px rgba(145, 70, 255, 0.3);
+}
+
+.download-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+}
+
+.download-card.featured:hover {
+    transform: scale(1.05) translateY(-5px);
+}
+
+.download-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+}
+
+.download-card h3 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.download-card.featured h3 {
+    color: white;
+}
+
+.download-button-modern {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    padding: 1.5rem 2rem;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    margin: 2rem 0;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    min-width: 200px;
+}
+
+.download-button-modern:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+}
+
+.download-text {
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+}
+
+.download-size {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.compatibility-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.quick-start-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    height: 100%;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.quick-start-card h3 {
+    color: #9146FF;
+    margin-bottom: 2rem;
+    font-size: 1.5rem;
+    text-align: center;
+}
+
+.quick-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.quick-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.quick-step .step-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.quick-step .step-content strong {
+    color: #9146FF;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.quick-step .step-content p {
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.download-details {
+    padding: 4rem 2rem;
+    background: white;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.detail-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 16px;
+    padding: 2.5rem;
+    border-left: 4px solid #9146FF;
+    transition: transform 0.3s ease;
+}
+
+.detail-card:hover {
+    transform: translateY(-3px);
+}
+
+.detail-icon {
+    font-size: 3rem;
+    margin-bottom: 1.5rem;
+}
+
+.detail-card h3 {
+    color: #9146FF;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.requirements-list {
+    list-style: none;
+    padding: 0;
+}
+
+.requirements-list li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+    color: #666;
+}
+
+.requirements-list li:last-child {
+    border-bottom: none;
+}
+
+.security-features {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.security-feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.security-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.security-feature strong {
+    color: #9146FF;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.security-feature p {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.smartscreen-note {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+    padding: 1rem;
+    font-size: 0.9rem;
+    color: #856404;
+}
+
+.download-alternatives {
+    padding: 4rem 2rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.download-alternatives h2 {
+    text-align: center;
+    margin-bottom: 3rem;
+    color: #2d2d2d;
+}
+
+.alternatives-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.alternative-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2.5rem;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease;
+}
+
+.alternative-card:hover {
+    transform: translateY(-3px);
+}
+
+.alt-icon {
+    font-size: 3rem;
+    margin-bottom: 1.5rem;
+}
+
+.alternative-card h3 {
+    color: #9146FF;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.alternative-card p {
+    color: #666;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.dev-links, .release-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.dev-link, .release-link {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #9146FF 0%, #772CE8 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.dev-link:hover, .release-link:hover {
+    transform: translateY(-1px);
     box-shadow: 0 4px 15px rgba(145, 70, 255, 0.3);
 }
 
-.download-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(145, 70, 255, 0.4);
+.download-next-steps {
+    padding: 4rem 2rem;
+    background: white;
 }
 
-.system-requirements, .source-code {
-    margin-top: 2rem;
-    padding: 1.5rem;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border-left: 4px solid #9146FF;
-}
-
-.download-options {
-    margin: 2rem 0;
+.download-next-steps h2 {
     text-align: center;
+    margin-bottom: 1rem;
+    color: #2d2d2d;
+}
+
+.next-steps-subtitle {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #666;
+    margin-bottom: 3rem;
+}
+
+.next-steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.next-step-item {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    transition: transform 0.3s ease;
+    border: 1px solid #e9ecef;
+}
+
+.next-step-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.next-step-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.next-step-item h4 {
+    color: #9146FF;
+    margin-bottom: 0.75rem;
+    font-size: 1.2rem;
+}
+
+.next-step-item p {
+    color: #666;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.next-step-item a {
+    color: #9146FF;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.next-step-item a:hover {
+    color: #772CE8;
+    text-decoration: underline;
+}
+
+/* Mobile responsiveness for download page */
+@media (max-width: 768px) {
+    .download-hero h1 {
+        font-size: 2.5rem;
+    }
+    
+    .download-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .download-card.featured {
+        order: -1;
+        transform: none;
+    }
+    
+    .details-grid, .alternatives-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .next-steps-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .version-badge {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .download-hero {
+        padding: 4rem 1rem 3rem;
+    }
+    
+    .download-main, .download-details, .download-alternatives, .download-next-steps {
+        padding: 3rem 1rem;
+    }
 }
 
 /* Responsive design */
